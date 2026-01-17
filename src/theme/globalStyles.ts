@@ -23,19 +23,24 @@ export const globalStyles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 16,
   },
+  form: {
+    width: '100%',
+  },
   input: {
     marginBottom: 16,
   },
   inputContent: {
     fontSize: 16,
   },
-  form: {
-    width: '100%',
+  errorText: {
+    fontSize: 12,
+    marginTop: -8,
+    marginBottom: 8,
   },
   registerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 16,
   },
 });
