@@ -1,16 +1,16 @@
-/**
- * Definición de endpoints de la API
- */
-
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: '/auth/login',
-    LOGOUT: '/auth/logout',
-    REGISTER: '/auth/register',
+    LOGIN: '/Authenticate/login',
+    REGISTER: '/Authenticate/register',
   },
-  USER: {
-    PROFILE: '/user/profile',
-    UPDATE: '/user/update',
+  CLIENTE: {
+    LISTADO: '/Cliente/Listado',
+    CREAR: '/Cliente/Crear',
+    ACTUALIZAR: '/Cliente/Actualizar',
+    OBTENER: (idCliente: string | number) => `/Cliente/Obtener/${idCliente}`,
+    ELIMINAR: (idCliente: string | number) => `/Cliente/Eliminar/${idCliente}`,
   },
-  // Agregar más endpoints según necesites
+  INTERESES: {
+    LISTADO: '/Intereses/Listado',
+  },
 } as const;

@@ -7,13 +7,21 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
+    "start:reset": "react-native start --reset-cache",
+    "clean": "rm -rf node_modules/.cache && rm -rf /tmp/metro-* && rm -rf /tmp/haste-*",
+    "clean:android": "cd android && ./gradlew clean && cd ..",
+    "clean:ios": "cd ios && rm -rf build && cd ..",
+    "clean:all": "npm run clean && npm run clean:android && npm run clean:ios",
     "test": "jest"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
+    "@react-native-async-storage/async-storage": "^2.1.0",
     "@react-native/new-app-screen": "0.83.1",
     "@react-navigation/native": "^6.1.9",
     "@react-navigation/native-stack": "^6.9.17",
+    "@reduxjs/toolkit": "^2.11.2",
+    "axios": "^1.13.2",
     "react": "19.2.0",
     "react-hook-form": "^7.71.1",
     "react-native": "0.83.1",
@@ -22,6 +30,8 @@
     "react-native-safe-area-context": "^5.5.2",
     "react-native-screens": "^3.31.1",
     "react-native-vector-icons": "^10.0.3",
+    "react-redux": "^9.2.0",
+    "redux-persist": "^6.0.0",
     "yup": "^1.7.1"
   },
   "devDependencies": {

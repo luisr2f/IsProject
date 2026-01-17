@@ -6,6 +6,7 @@
 // Componentes comunes
 export { Logo } from './common/logo';
 export { Button } from './common/button';
+export { GlobalSnackbar } from './common/snackbar';
 // export { default as Card } from './common/Card';
 // export { default as Input } from './common/Input';
 

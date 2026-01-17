@@ -8,7 +8,7 @@
 // import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const storage = {
-  get: async (key: string) => {
+  get: async (_key: string) => {
     // TODO: Descomentar cuando AsyncStorage esté instalado
     // try {
     //   const value = await AsyncStorage.getItem(key);
@@ -19,7 +19,7 @@ export const storage = {
     // }
     return null;
   },
-  set: async (key: string, value: any) => {
+  set: async (_key: string, _value: any) => {
     // TODO: Descomentar cuando AsyncStorage esté instalado
     // try {
     //   await AsyncStorage.setItem(key, JSON.stringify(value));
@@ -27,7 +27,7 @@ export const storage = {
     //   console.error('Error writing to storage:', error);
     // }
   },
-  remove: async (key: string) => {
+  remove: async (_key: string) => {
     // TODO: Descomentar cuando AsyncStorage esté instalado
     // try {
     //   await AsyncStorage.removeItem(key);

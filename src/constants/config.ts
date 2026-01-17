@@ -3,12 +3,7 @@
  * Las variables se cargan desde el archivo .env usando react-native-dotenv
  */
 
-import {
-  API_BASE_URL,
-  APP_NAME,
-  APP_VERSION,
-  NODE_ENV,
-} from '@env';
+import { API_BASE_URL, APP_NAME, APP_VERSION, NODE_ENV } from '@env';
 
 export const APP_CONFIG = {
   API_BASE_URL: API_BASE_URL || 'https://api.example.com',

@@ -1,5 +1,11 @@
 import React, { useRef, useState } from 'react';
-import { View, KeyboardAvoidingView, Platform, ScrollView, Keyboard } from 'react-native';
+import {
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Keyboard,
+} from 'react-native';
 import { Text, TextInput, useTheme } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
@@ -9,6 +15,9 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Logo, Button } from '@/components';
 import { globalStyles } from '@/theme';
 import { styles } from './registerScreenStyles';
+import { useAppDispatch } from '@/store/hooks';
+import { showError, showSuccess, useRegisterMutation } from '@/store';
+import { APP_CONFIG } from '@/constants/config';
 
 type RegisterScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -16,7 +25,7 @@ type RegisterScreenProps = NativeStackScreenProps<
 >;
 
 type FormData = {
-  name: string;
+  username: string;
   email: string;
   password: string;
 };
@@ -25,16 +34,17 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
   navigation,
 }) => {
   const theme = useTheme();
+  const dispatch = useAppDispatch();
   const scrollRef = useRef<ScrollView | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+
+  // RTK Query mutation hook
+  const [register, { isLoading }] = useRegisterMutation();
 
   const schema = yup
     .object()
     .shape({
-      name: yup
-        .string()
-        .required('El nombre es requerido'),
+      username: yup.string().required('El nombre de usuario es requerido'),
       email: yup
         .string()
         .required('El correo electrónico es requerido')
@@ -47,16 +57,31 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
         .test(
           'password-requirements',
           'La contraseña debe tener números, al menos una mayúscula y una minúscula',
-          (value) => {
+          value => {
             if (!value) return false;
             const hasNumber = /\d/.test(value);
             const hasUpperCase = /[A-Z]/.test(value);
             const hasLowerCase = /[a-z]/.test(value);
             return hasNumber && hasUpperCase && hasLowerCase;
-          }
+          },
         ),
     })
     .required();
+
+  // Valores por defecto para desarrollo
+  const isDevelopment =
+    APP_CONFIG.NODE_ENV === 'development' || APP_CONFIG.NODE_ENV === 'develop';
+  const defaultValues: FormData = isDevelopment
+    ? {
+        username: 'testuser',
+        email: 'test@example.com',
+        password: 'Test123456',
+      }
+    : {
+        username: '',
+        email: '',
+        password: '',
+      };
 
   const {
     control,
@@ -65,11 +90,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
   } = useForm<FormData>({
     mode: 'onSubmit',
     resolver: yupResolver(schema),
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-    },
+    defaultValues,
   });
 
   const handleRegister = async (data: FormData) => {
@@ -79,15 +100,31 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
       animated: true,
     });
 
-    setLoading(true);
     try {
-      // Aquí iría la lógica de registro
-      console.log('Datos del formulario:', data);
-      // await signUp({ email: data.email, password: data.password, name: data.name });
-    } catch (error) {
+      const result = await register({
+        username: data.username,
+        email: data.email,
+        password: data.password,
+      }).unwrap();
+
+      // Mostrar mensaje de éxito
+      dispatch(showSuccess('¡Registro exitoso! Redirigiendo a ingresar...'));
+
+      // Navigate to login screen after successful registration
+      if (result) {
+        setTimeout(() => {
+          navigation.navigate('Login');
+        }, 1500);
+      }
+    } catch (error: any) {
+      const errorMessage =
+        error.data?.message ||
+        error.data?.error ||
+        error.message ||
+        'Error al registrar usuario. Por favor, intente nuevamente.';
+
+      dispatch(showError(errorMessage));
       console.error('Error en el registro:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -123,18 +160,20 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
                   onChangeText={onChange}
                   onBlur={onBlur}
                   mode="outlined"
-                  autoCapitalize="words"
-                  autoComplete="name"
-                  error={!!errors.name}
+                  autoCapitalize="none"
+                  autoComplete="username"
+                  error={!!errors.username}
                   style={globalStyles.input}
                   contentStyle={globalStyles.inputContent}
                 />
               )}
-              name="name"
+              name="username"
             />
-            {errors.name && (
-              <Text style={[globalStyles.errorText, { color: theme.colors.error }]}>
-                {errors.name.message}
+            {errors.username && (
+              <Text
+                style={[globalStyles.errorText, { color: theme.colors.error }]}
+              >
+                {errors.username.message}
               </Text>
             )}
 
@@ -158,7 +197,9 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
               name="email"
             />
             {errors.email && (
-              <Text style={[globalStyles.errorText, { color: theme.colors.error }]}>
+              <Text
+                style={[globalStyles.errorText, { color: theme.colors.error }]}
+              >
                 {errors.email.message}
               </Text>
             )}
@@ -189,7 +230,9 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
               name="password"
             />
             {errors.password && (
-              <Text style={[globalStyles.errorText, { color: theme.colors.error }]}>
+              <Text
+                style={[globalStyles.errorText, { color: theme.colors.error }]}
+              >
                 {errors.password.message}
               </Text>
             )}
@@ -198,7 +241,7 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
               <Button
                 variant="secondary"
                 onPress={() => navigation.goBack()}
-                disabled={loading}
+                disabled={isLoading}
                 style={styles.button}
               >
                 Cancelar
@@ -206,11 +249,11 @@ export const RegisterScreen: React.FC<RegisterScreenProps> = ({
               <Button
                 variant="primary"
                 onPress={handleSubmit(handleRegister)}
-                loading={loading}
-                disabled={loading}
+                loading={isLoading}
+                disabled={isLoading}
                 style={styles.button}
               >
-                {loading ? 'Creando cuenta...' : 'Registrarme'}
+                {isLoading ? 'Creando cuenta...' : 'Registrarme'}
               </Button>
             </View>
           </View>

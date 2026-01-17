@@ -1,5 +1,11 @@
-import React, { useRef, useState } from 'react';
-import { View, KeyboardAvoidingView, Platform, ScrollView, Keyboard } from 'react-native';
+import React, { useRef, useState, useEffect } from 'react';
+import {
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Keyboard,
+} from 'react-native';
 import {
   Text,
   TextInput,
@@ -13,6 +19,11 @@ import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Logo, Button } from '@/components';
 import { globalStyles } from '@/theme';
+import { useAppDispatch } from '@/store/hooks';
+import { useLoginMutation } from '@/store/api/authApi';
+import { setCredentials } from '@/store/slices/authSlice';
+import { showError } from '@/store/slices/snackbarSlice';
+import { APP_CONFIG } from '@/constants/config';
 
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -23,21 +34,25 @@ type FormData = {
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const theme = useTheme();
+  const dispatch = useAppDispatch();
   const scrollRef = useRef<ScrollView | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+
+  // Use RTK Query mutation for login
+  const [login, { isLoading, reset: resetLogin }] = useLoginMutation();
 
   const schema = yup
     .object()
     .shape({
-      username: yup
-        .string()
-        .required('El usuario es requerido'),
-      password: yup
-        .string()
-        .required('La contraseña es requerida'),
+      username: yup.string().required('El usuario es requerido'),
+      password: yup.string().required('La contraseña es requerida'),
     })
     .required();
+
+  // Credenciales de ejemplo para desarrollo
+  const isDevelopment = APP_CONFIG.NODE_ENV === 'development';
+  const defaultUsername = isDevelopment ? 'testuser1' : '';
+  const defaultPassword = isDevelopment ? 'Test123456' : '';
 
   const {
     control,
@@ -47,10 +62,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     mode: 'onSubmit',
     resolver: yupResolver(schema),
     defaultValues: {
-      username: '',
-      password: '',
+      username: defaultUsername,
+      password: defaultPassword,
     },
   });
+
+  // Reset mutation when screen is focused
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      resetLogin();
+    });
+    return unsubscribe;
+  }, [navigation, resetLogin]);
 
   const handleLogin = async (data: FormData) => {
     Keyboard.dismiss();
@@ -59,15 +82,31 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       animated: true,
     });
 
-    setLoading(true);
     try {
-      // Aquí iría la lógica de login
-      console.log('Datos del formulario:', data);
-      // await signIn({ username: data.username, password: data.password });
-    } catch (error) {
+      const response = await login({
+        username: data.username,
+        password: data.password,
+      }).unwrap();
+
+      // Update Redux state with credentials
+      dispatch(
+        setCredentials({
+          token: response.token,
+          expiration: response.expiration,
+          userid: response.userid,
+          username: response.username,
+        }),
+      );
+
+      // El cambio de estado de autenticación manejará la navegación automáticamente
+    } catch (error: any) {
+      // Handle error and show snackbar
+      const errorMessage =
+        error?.data?.message ||
+        error?.message ||
+        'Error al iniciar sesión. Por favor, intente nuevamente.';
+      dispatch(showError(errorMessage));
       console.error('Error en el login:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -107,7 +146,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   onChangeText={onChange}
                   onBlur={onBlur}
                   mode="outlined"
-                  keyboardType="default"
                   autoCapitalize="none"
                   autoComplete="username"
                   error={!!errors.username}
@@ -118,7 +156,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               name="username"
             />
             {errors.username && (
-              <Text style={[globalStyles.errorText, { color: theme.colors.error }]}>
+              <Text
+                style={[globalStyles.errorText, { color: theme.colors.error }]}
+              >
                 {errors.username.message}
               </Text>
             )}
@@ -149,7 +189,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
               name="password"
             />
             {errors.password && (
-              <Text style={[globalStyles.errorText, { color: theme.colors.error }]}>
+              <Text
+                style={[globalStyles.errorText, { color: theme.colors.error }]}
+              >
                 {errors.password.message}
               </Text>
             )}
@@ -157,10 +199,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             <Button
               variant="primary"
               onPress={handleSubmit(handleLogin)}
-              loading={loading}
-              disabled={loading}
+              loading={isLoading}
+              disabled={isLoading}
             >
-              {loading ? 'Iniciando sesión...' : 'INICIAR SESIÓN'}
+              {isLoading ? 'Iniciando sesión...' : 'INICIAR SESIÓN'}
             </Button>
 
             <View style={globalStyles.registerContainer}>
