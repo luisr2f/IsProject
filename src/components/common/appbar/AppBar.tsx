@@ -11,12 +11,13 @@ interface AppBarProps {
   title?: string;
 }
 
-export const AppBar: React.FC<AppBarProps> = ({ type='home', title='' }) => {
+export const AppBar: React.FC<AppBarProps> = ({
+  type = 'home',
+  title = '',
+}) => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation();
- const username =
-    useAppSelector(state => state.auth.username) || '';
-
+  const username = useAppSelector(state => state.auth.username) || '';
 
   const handleLogout = () => {
     dispatch(logout());
@@ -39,10 +40,12 @@ export const AppBar: React.FC<AppBarProps> = ({ type='home', title='' }) => {
       ) : type === 'mainPage' ? (
         <Appbar.Action icon="home" size={34} onPress={handleHome} />
       ) : (
-         <Appbar.BackAction onPress={handleBack} />
+        <Appbar.BackAction onPress={handleBack} />
       )}
-      <Appbar.Content title={type === 'home'? username : title} />
-     {type !== 'internalPage' && <Appbar.Action icon="logout" onPress={handleLogout} size={34} />}
+      <Appbar.Content title={type === 'home' ? username : title} />
+      {type !== 'internalPage' && (
+        <Appbar.Action icon="logout" onPress={handleLogout} size={34} />
+      )}
     </Appbar.Header>
   );
 };

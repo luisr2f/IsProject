@@ -10,3 +10,12 @@ export type {
 
 export { interestsApi } from './interestsApi';
 export type { Interest } from './interestsApi';
+
+export { clientApi } from './clientApi';
+export type {
+  Client,
+  CreateClientRequest,
+  UpdateClientRequest,
+  ClientListResponse,
+  ClientListItem,
+} from './clientApi';

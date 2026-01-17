@@ -7,7 +7,11 @@ interface BaseQueryArgs {
   data?: any;
 }
 
-export const baseQuery: BaseQueryFn<BaseQueryArgs, unknown, unknown> = async (args) => {
+export const baseQuery: BaseQueryFn<
+  BaseQueryArgs,
+  unknown,
+  unknown
+> = async args => {
   try {
     const { url, method = 'POST', data } = args;
     const response = await defaultAxiosInstance.request({

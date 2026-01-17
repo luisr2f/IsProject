@@ -16,34 +16,55 @@ export const styles = StyleSheet.create({
   newClientButton: {
     width: '100%',
   },
-  listContainer: {
+  listContent: {
     padding: 16,
-    paddingTop: 20,
+    paddingTop: 8,
   },
   clientCard: {
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    elevation: 2,
-    backgroundColor: 'white',
+    marginBottom: 8,
+    backgroundColor: '#FFFFFF',
+    elevation: 0,
+    borderWidth: 0,
+    paddingVertical: 10,
   },
   clientCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 4,
   },
-  clientIcon: {
-    margin: 0,
+  avatar: {
     marginRight: 16,
+    backgroundColor: '#FF0000',
   },
   clientInfo: {
     flex: 1,
+    justifyContent: 'center',
   },
   clientName: {
-    fontWeight: '600',
-    marginBottom: 4,
+    fontWeight: '500',
+    marginBottom: 0,
     color: '#000000',
   },
-  clientEmail: {
-    color: '#666666',
+  clientNumber: {
+    color: '#8E8E93',
+    fontSize: 14,
+  },
+  chevron: {
+    margin: 0,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 100,
+  },
+  emptyText: {
+    color: '#8E8E93',
+    marginTop: 16,
+  },
+  errorText: {
+    color: '#FF3B30',
+    marginTop: 16,
   },
 });

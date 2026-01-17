@@ -12,7 +12,9 @@ type DashboardScreenProps = NativeStackScreenProps<
   'Dashboard'
 >;
 
-export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
+export const DashboardScreen: React.FC<DashboardScreenProps> = ({
+  navigation,
+}) => {
   const username =
     useAppSelector(state => state.auth.username) || 'Nombre de Usuario';
 
@@ -20,10 +22,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
     <View style={styles.container}>
       <AppBar title={username} />
       <View style={styles.content}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => {
             navigation.navigate('ClientList');
-          }} 
+          }}
           activeOpacity={0.7}
           style={styles.pressableCard}
         >
@@ -35,9 +37,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) 
                 style={styles.cardIcon}
               />
               <View style={styles.cardText}>
-                <RNText style={styles.cardTitle}>
-                  Clientes
-                </RNText>
+                <RNText style={styles.cardTitle}>Clientes</RNText>
                 <RNText style={styles.cardSubtitle}>
                   Administrar clientes
                 </RNText>

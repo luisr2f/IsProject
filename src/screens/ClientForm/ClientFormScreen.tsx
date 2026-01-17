@@ -29,54 +29,60 @@ const GENERO_OPTIONS = [
   { label: 'Femenino', value: 'F' },
 ];
 
-
 // Validación con yup
 const schema = yup
-    .object()
-    .shape({
-      nombre: yup
-        .string()
-        .required('El nombre es requerido'),
-      apellidos: yup
-        .string()
-        .required('Los apellidos son requeridos'),
-      identificacion: yup
-        .string()
-        .required('La identificación es requerida'),
-      celular: yup
-        .string()
-        .required('El celular es requerido')
-        .matches(/^[0-9+\-\s()]+$/, 'El celular solo debe contener números y caracteres válidos'),
-      telefono: yup
-        .string()
-        .required('El teléfono es requerido')
-        .matches(/^[0-9+\-\s()]+$/, 'El teléfono solo debe contener números y caracteres válidos'),
-      direccion: yup
-        .string()
-        .required('La dirección es requerida'),
-      fNacimiento: yup
-        .string()
-        .required('La fecha de nacimiento es requerida')
-        .test('date-format', 'La fecha debe tener el formato DD.MM.YYYY', value => {
+  .object()
+  .shape({
+    nombre: yup.string().required('El nombre es requerido'),
+    apellidos: yup.string().required('Los apellidos son requeridos'),
+    identificacion: yup.string().required('La identificación es requerida'),
+    celular: yup
+      .string()
+      .required('El celular es requerido')
+      .matches(
+        /^[0-9+\-\s()]+$/,
+        'El celular solo debe contener números y caracteres válidos',
+      ),
+    telefono: yup
+      .string()
+      .required('El teléfono es requerido')
+      .matches(
+        /^[0-9+\-\s()]+$/,
+        'El teléfono solo debe contener números y caracteres válidos',
+      ),
+    direccion: yup.string().required('La dirección es requerida'),
+    fNacimiento: yup
+      .string()
+      .required('La fecha de nacimiento es requerida')
+      .test(
+        'date-format',
+        'La fecha debe tener el formato DD.MM.YYYY',
+        value => {
           if (!value) return false;
           const dateRegex = /^\d{2}\.\d{2}\.\d{4}$/;
           return dateRegex.test(value);
-        })
-        .test('valid-date', 'La fecha debe ser válida', value => {
-          if (!value) return false;
-          // Convertir DD.MM.YYYY a Date
-          const parts = value.split('.');
-          if (parts.length !== 3) return false;
-          const day = parseInt(parts[0], 10);
-          const month = parseInt(parts[1], 10) - 1; // Los meses en Date son 0-indexed
-          const year = parseInt(parts[2], 10);
-          const date = new Date(year, month, day);
-          return !isNaN(date.getTime()) && 
-                 date.getDate() === day && 
-                 date.getMonth() === month && 
-                 date.getFullYear() === year;
-        })
-        .test('past-date', 'La fecha de nacimiento debe ser en el pasado', value => {
+        },
+      )
+      .test('valid-date', 'La fecha debe ser válida', value => {
+        if (!value) return false;
+        // Convertir DD.MM.YYYY a Date
+        const parts = value.split('.');
+        if (parts.length !== 3) return false;
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // Los meses en Date son 0-indexed
+        const year = parseInt(parts[2], 10);
+        const date = new Date(year, month, day);
+        return (
+          !isNaN(date.getTime()) &&
+          date.getDate() === day &&
+          date.getMonth() === month &&
+          date.getFullYear() === year
+        );
+      })
+      .test(
+        'past-date',
+        'La fecha de nacimiento debe ser en el pasado',
+        value => {
           if (!value) return false;
           const parts = value.split('.');
           if (parts.length !== 3) return false;
@@ -87,41 +93,44 @@ const schema = yup
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           return date < today;
-        }),
-      fAfiliacion: yup
-        .string()
-        .required('La fecha de afiliación es requerida')
-        .test('date-format', 'La fecha debe tener el formato DD.MM.YYYY', value => {
+        },
+      ),
+    fAfiliacion: yup
+      .string()
+      .required('La fecha de afiliación es requerida')
+      .test(
+        'date-format',
+        'La fecha debe tener el formato DD.MM.YYYY',
+        value => {
           if (!value) return false;
           const dateRegex = /^\d{2}\.\d{2}\.\d{4}$/;
           return dateRegex.test(value);
-        })
-        .test('valid-date', 'La fecha debe ser válida', value => {
-          if (!value) return false;
-          // Convertir DD.MM.YYYY a Date
-          const parts = value.split('.');
-          if (parts.length !== 3) return false;
-          const day = parseInt(parts[0], 10);
-          const month = parseInt(parts[1], 10) - 1; // Los meses en Date son 0-indexed
-          const year = parseInt(parts[2], 10);
-          const date = new Date(year, month, day);
-          return !isNaN(date.getTime()) && 
-                 date.getDate() === day && 
-                 date.getMonth() === month && 
-                 date.getFullYear() === year;
-        }),
-      genero: yup
-        .string()
-        .required('El género es requerido')
-        .oneOf(['M', 'F'], 'El género debe ser Masculino o Femenino'),
-      resenna: yup
-        .string()
-        .required('La reseña es requerida'),
-      interesFK: yup
-        .string()
-        .required('El interés es requerido'),
-    })
-    .required();
+        },
+      )
+      .test('valid-date', 'La fecha debe ser válida', value => {
+        if (!value) return false;
+        // Convertir DD.MM.YYYY a Date
+        const parts = value.split('.');
+        if (parts.length !== 3) return false;
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1; // Los meses en Date son 0-indexed
+        const year = parseInt(parts[2], 10);
+        const date = new Date(year, month, day);
+        return (
+          !isNaN(date.getTime()) &&
+          date.getDate() === day &&
+          date.getMonth() === month &&
+          date.getFullYear() === year
+        );
+      }),
+    genero: yup
+      .string()
+      .required('El género es requerido')
+      .oneOf(['M', 'F'], 'El género debe ser Masculino o Femenino'),
+    resenna: yup.string().required('La reseña es requerida'),
+    interesFK: yup.string().required('El interés es requerido'),
+  })
+  .required();
 
 type FormData = yup.InferType<typeof schema>;
 
@@ -171,8 +180,7 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
         })(),
         genero: 'M',
         resenna: 'Lorem ipsun',
-        interesFK: '47c53f03-87fb-4bc4-8426-d17ef67445e0'
-
+        interesFK: '47c53f03-87fb-4bc4-8426-d17ef67445e0',
       }
     : {
         nombre: '',
@@ -222,24 +230,27 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
     return dateString;
   };
 
-  const handleDateTextChange = (field: 'fNacimiento' | 'fAfiliacion', text: string) => {
+  const handleDateTextChange = (
+    field: 'fNacimiento' | 'fAfiliacion',
+    text: string,
+  ) => {
     // Permitir solo números y puntos
     let cleaned = text.replace(/[^0-9.]/g, '');
-    
+
     // Evitar múltiples puntos consecutivos
     cleaned = cleaned.replace(/\.{2,}/g, '.');
-    
+
     // Limitar formato DD.MM.YYYY
     const parts = cleaned.split('.');
     if (parts.length > 3) {
       // Si hay más de 3 partes, tomar solo las primeras 3
       cleaned = parts.slice(0, 3).join('.');
     }
-    
+
     // Validar y limitar longitud de cada parte
     const newParts = cleaned.split('.');
     let formatted = '';
-    
+
     for (let i = 0; i < newParts.length; i++) {
       if (i === 0) {
         // Día: máximo 2 dígitos, validar rango 01-31
@@ -271,7 +282,7 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
         formatted += '.' + year;
       }
     }
-    
+
     // Actualizar el valor en el formulario
     setValue(field, formatted, { shouldValidate: false });
   };
@@ -297,10 +308,10 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
     try {
       // TODO: Integrar con Redux aquí
       console.log('Form data:', data);
-      
+
       // Simular delay
       await new Promise<void>(resolve => setTimeout(resolve, 1000));
-      
+
       // Aquí irá la integración con Redux
     } catch (error) {
       console.error('Error al enviar formulario:', error);
@@ -321,8 +332,7 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
           contentContainerStyle={globalStyles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={[globalStyles.content, styles.content]}>           
-
+          <View style={[globalStyles.content, styles.content]}>
             <View style={globalStyles.form}>
               {/* Identificación */}
               <Controller
@@ -344,7 +354,10 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               />
               {errors.identificacion && (
                 <Text
-                  style={[globalStyles.errorText, { color: theme.colors.error }]}
+                  style={[
+                    globalStyles.errorText,
+                    { color: theme.colors.error },
+                  ]}
                 >
                   {errors.identificacion.message}
                 </Text>
@@ -370,7 +383,10 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               />
               {errors.nombre && (
                 <Text
-                  style={[globalStyles.errorText, { color: theme.colors.error }]}
+                  style={[
+                    globalStyles.errorText,
+                    { color: theme.colors.error },
+                  ]}
                 >
                   {errors.nombre.message}
                 </Text>
@@ -396,7 +412,10 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               />
               {errors.apellidos && (
                 <Text
-                  style={[globalStyles.errorText, { color: theme.colors.error }]}
+                  style={[
+                    globalStyles.errorText,
+                    { color: theme.colors.error },
+                  ]}
                 >
                   {errors.apellidos.message}
                 </Text>
@@ -414,7 +433,8 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
                         <TextInput
                           label="Género *"
                           value={
-                            GENERO_OPTIONS.find(opt => opt.value === value)?.label || ''
+                            GENERO_OPTIONS.find(opt => opt.value === value)
+                              ?.label || ''
                           }
                           mode="outlined"
                           error={!!errors.genero}
@@ -449,7 +469,10 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               />
               {errors.genero && (
                 <Text
-                  style={[globalStyles.errorText, { color: theme.colors.error }]}
+                  style={[
+                    globalStyles.errorText,
+                    { color: theme.colors.error },
+                  ]}
                 >
                   {errors.genero.message}
                 </Text>
@@ -460,12 +483,12 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
                 control={control}
                 render={({ field: { value, onBlur } }) => {
                   const displayValue = formatDateForDisplay(value);
-                  
+
                   return (
                     <TextInput
                       label="Fecha Nacimiento *"
                       value={displayValue}
-                      onChangeText={(text) => {
+                      onChangeText={text => {
                         handleDateTextChange('fNacimiento', text);
                       }}
                       onBlur={onBlur}
@@ -473,9 +496,7 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
                       keyboardType="numeric"
                       placeholder="DD.MM.YYYY"
                       error={!!errors.fNacimiento}
-                      right={
-                        <TextInput.Icon icon="calendar" />
-                      }
+                      right={<TextInput.Icon icon="calendar" />}
                       style={globalStyles.input}
                       contentStyle={globalStyles.inputContent}
                     />
@@ -485,7 +506,10 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               />
               {errors.fNacimiento && (
                 <Text
-                  style={[globalStyles.errorText, { color: theme.colors.error }]}
+                  style={[
+                    globalStyles.errorText,
+                    { color: theme.colors.error },
+                  ]}
                 >
                   {errors.fNacimiento.message}
                 </Text>
@@ -496,12 +520,12 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
                 control={control}
                 render={({ field: { value, onBlur } }) => {
                   const displayValue = formatDateForDisplay(value);
-                  
+
                   return (
                     <TextInput
                       label="Fecha de Afiliación *"
                       value={displayValue}
-                      onChangeText={(text) => {
+                      onChangeText={text => {
                         handleDateTextChange('fAfiliacion', text);
                       }}
                       onBlur={onBlur}
@@ -509,9 +533,7 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
                       keyboardType="numeric"
                       placeholder="DD.MM.YYYY"
                       error={!!errors.fAfiliacion}
-                      right={
-                        <TextInput.Icon icon="calendar" />
-                      }
+                      right={<TextInput.Icon icon="calendar" />}
                       style={globalStyles.input}
                       contentStyle={globalStyles.inputContent}
                     />
@@ -521,7 +543,10 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               />
               {errors.fAfiliacion && (
                 <Text
-                  style={[globalStyles.errorText, { color: theme.colors.error }]}
+                  style={[
+                    globalStyles.errorText,
+                    { color: theme.colors.error },
+                  ]}
                 >
                   {errors.fAfiliacion.message}
                 </Text>
@@ -547,7 +572,10 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               />
               {errors.celular && (
                 <Text
-                  style={[globalStyles.errorText, { color: theme.colors.error }]}
+                  style={[
+                    globalStyles.errorText,
+                    { color: theme.colors.error },
+                  ]}
                 >
                   {errors.celular.message}
                 </Text>
@@ -573,7 +601,10 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               />
               {errors.telefono && (
                 <Text
-                  style={[globalStyles.errorText, { color: theme.colors.error }]}
+                  style={[
+                    globalStyles.errorText,
+                    { color: theme.colors.error },
+                  ]}
                 >
                   {errors.telefono.message}
                 </Text>
@@ -593,7 +624,8 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
                           value={
                             isLoadingInterests
                               ? 'Cargando...'
-                              : INTERES_OPTIONS.find(opt => opt.value === value)?.label || ''
+                              : INTERES_OPTIONS.find(opt => opt.value === value)
+                                  ?.label || ''
                           }
                           mode="outlined"
                           error={!!errors.interesFK || !!interestsError}
@@ -631,14 +663,20 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               />
               {errors.interesFK && (
                 <Text
-                  style={[globalStyles.errorText, { color: theme.colors.error }]}
+                  style={[
+                    globalStyles.errorText,
+                    { color: theme.colors.error },
+                  ]}
                 >
                   {errors.interesFK.message}
                 </Text>
               )}
               {interestsError && (
                 <Text
-                  style={[globalStyles.errorText, { color: theme.colors.error }]}
+                  style={[
+                    globalStyles.errorText,
+                    { color: theme.colors.error },
+                  ]}
                 >
                   Error al cargar los intereses
                 </Text>
@@ -666,7 +704,10 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               />
               {errors.direccion && (
                 <Text
-                  style={[globalStyles.errorText, { color: theme.colors.error }]}
+                  style={[
+                    globalStyles.errorText,
+                    { color: theme.colors.error },
+                  ]}
                 >
                   {errors.direccion.message}
                 </Text>
@@ -693,7 +734,10 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               />
               {errors.resenna && (
                 <Text
-                  style={[globalStyles.errorText, { color: theme.colors.error }]}
+                  style={[
+                    globalStyles.errorText,
+                    { color: theme.colors.error },
+                  ]}
                 >
                   {errors.resenna.message}
                 </Text>
