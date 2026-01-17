@@ -8,44 +8,35 @@ export const styles = StyleSheet.create({
   content: {
     flex: 1,
     backgroundColor: '#F2F2F7',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
+  },
+  listContainer: {
+    padding: 16,
     paddingTop: 20,
   },
-  pressableCard: {
-    width: '90%',
-  },
-  card: {
-    width: '100%',
+  clientCard: {
     borderRadius: 12,
     padding: 16,
-    marginTop: 20,
+    marginBottom: 12,
     elevation: 2,
     backgroundColor: 'white',
-    minHeight: 80,
   },
-  cardContent: {
+  clientCardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
   },
-  cardIcon: {
+  clientIcon: {
     margin: 0,
     marginRight: 16,
   },
-  cardText: {
+  clientInfo: {
     flex: 1,
-    flexShrink: 1,
-    justifyContent: 'center',
   },
-  cardTitle: {
+  clientName: {
     fontWeight: '600',
     marginBottom: 4,
     color: '#000000',
-    fontSize: 20,
   },
-  cardSubtitle: {
+  clientEmail: {
     color: '#666666',
-    fontSize: 14,
   },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
-import { View } from 'react-native';
-import { Text, Surface, IconButton } from 'react-native-paper';
+import { View, TouchableOpacity, Text as RNText } from 'react-native';
+import { Surface, IconButton } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 import { AppBar } from '@/components/common';
@@ -12,7 +12,7 @@ type DashboardScreenProps = NativeStackScreenProps<
   'Dashboard'
 >;
 
-export const DashboardScreen: React.FC<DashboardScreenProps> = () => {
+export const DashboardScreen: React.FC<DashboardScreenProps> = ({ navigation }) => {
   const username =
     useAppSelector(state => state.auth.username) || 'Nombre de Usuario';
 
@@ -20,24 +20,31 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = () => {
     <View style={styles.container}>
       <AppBar title={username} />
       <View style={styles.content}>
-        <Surface style={styles.card}>
-          <View style={styles.cardContent}>
-            <IconButton
-              icon="book-outline"
-              size={40}
-              iconColor="#072477"
-              style={styles.cardIcon}
-            />
-            <View style={styles.cardText}>
-              <Text variant="titleLarge" style={styles.cardTitle}>
-                Clientes
-              </Text>
-              <Text variant="bodyMedium" style={styles.cardSubtitle}>
-                Administrar clientes
-              </Text>
+        <TouchableOpacity 
+          onPress={() => {
+            navigation.navigate('ClientList');
+          }} 
+          activeOpacity={0.7}
+          style={styles.pressableCard}
+        >
+          <Surface style={styles.card}>
+            <View style={styles.cardContent}>
+              <IconButton
+                icon="book-outline"
+                size={40}
+                style={styles.cardIcon}
+              />
+              <View style={styles.cardText}>
+                <RNText style={styles.cardTitle}>
+                  Clientes
+                </RNText>
+                <RNText style={styles.cardSubtitle}>
+                  Administrar clientes
+                </RNText>
+              </View>
             </View>
-          </View>
-        </Surface>
+          </Surface>
+        </TouchableOpacity>
       </View>
     </View>
   );

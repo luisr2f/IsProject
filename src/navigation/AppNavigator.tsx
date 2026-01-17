@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LoginScreen } from '@/screens/Login';
 import { RegisterScreen } from '@/screens/Register';
 import { DashboardScreen } from '@/screens/Dashboard';
+import { ClientListScreen } from '@/screens/ClientList';
 import { useAppSelector } from '@/store/hooks';
 import type { RootStackParamList } from './types';
 
@@ -31,13 +32,16 @@ export const AppNavigator: React.FC = () => {
           </>
         ) : (
           // Pantallas accesibles solo cuando está autenticado
-          <Stack.Screen
-            name="Dashboard"
-            component={DashboardScreen}
-            options={{
-              gestureEnabled: false, // Previene volver atrás desde el dashboard
-            }}
-          />
+          <>
+            <Stack.Screen
+              name="Dashboard"
+              component={DashboardScreen}
+              options={{
+                gestureEnabled: false, // Previene volver atrás desde el dashboard
+              }}
+            />
+            <Stack.Screen name="ClientList" component={ClientListScreen} />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
