@@ -7,6 +7,8 @@
 export { Logo } from './common/logo';
 export { Button } from './common/button';
 export { GlobalSnackbar } from './common/snackbar';
+export { LoadingOverlay } from './common/loadingOverlay';
+export type { LoadingOverlayProps } from './common/loadingOverlay';
 // export { default as Card } from './common/Card';
 // export { default as Input } from './common/Input';
 

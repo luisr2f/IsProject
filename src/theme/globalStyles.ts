@@ -6,6 +6,7 @@ export const globalStyles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 80,
   },
   content: {
     flex: 1,

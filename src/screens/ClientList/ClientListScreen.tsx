@@ -36,7 +36,7 @@ export const ClientListScreen: React.FC<ClientListScreenProps> = ({
 
   const handleClientPress = (client: ClientListItem) => {
     // Navegar al formulario de cliente con el ID para edición
-    navigation.navigate('ClientForm', { clientId: client.id });
+    navigation.navigate('ClientForm', { id: client.id });
   };
 
   const renderClientItem = ({ item }: { item: ClientListItem }) => {

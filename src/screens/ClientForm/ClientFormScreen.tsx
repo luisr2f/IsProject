@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   KeyboardAvoidingView,
@@ -13,11 +13,18 @@ import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { AppBar } from '@/components/common';
-import { Button } from '@/components';
+import { Button, LoadingOverlay } from '@/components';
 import { globalStyles } from '@/theme';
 import { styles } from './clientFormScreenStyles';
 import { APP_CONFIG } from '@/constants/config';
 import { useGetInterestsListQuery } from '@/store/api/interestsApi';
+import { useAppSelector, useAppDispatch } from '@/store/hooks';
+import {
+  useCreateClientMutation,
+  useGetClientByIdQuery,
+} from '@/store/api/clientApi';
+import { showSuccess, showError } from '@/store/slices/snackbarSlice';
+import { Loading } from '@/components/common/loading';
 
 type ClientFormScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -28,6 +35,50 @@ const GENERO_OPTIONS = [
   { label: 'Masculino', value: 'M' },
   { label: 'Femenino', value: 'F' },
 ];
+
+// Función helper para validación de fechas
+const createDateValidation = (requiredMessage: string) => {
+  return yup
+    .string()
+    .required(requiredMessage)
+    .test(
+      'date-format',
+      'La fecha debe tener el formato DD.MM.YYYY',
+      value => {
+        if (!value) return false;
+        const dateRegex = /^\d{2}\.\d{2}\.\d{4}$/;
+        return dateRegex.test(value);
+      },
+    )
+    .test('valid-date', 'La fecha debe ser válida', value => {
+      if (!value) return false;
+      // Convertir DD.MM.YYYY a Date
+      const parts = value.split('.');
+      if (parts.length !== 3) return false;
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1; // Los meses en Date son 0-indexed
+      const year = parseInt(parts[2], 10);
+      const date = new Date(year, month, day);
+      return (
+        !isNaN(date.getTime()) &&
+        date.getDate() === day &&
+        date.getMonth() === month &&
+        date.getFullYear() === year
+      );
+    })
+    .test('past-date', 'La fecha debe ser en el pasado', value => {
+      if (!value) return false;
+      const parts = value.split('.');
+      if (parts.length !== 3) return false;
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const year = parseInt(parts[2], 10);
+      const date = new Date(year, month, day);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      return date < today;
+    });
+};
 
 // Validación con yup
 const schema = yup
@@ -43,7 +94,7 @@ const schema = yup
         /^[0-9+\-\s()]+$/,
         'El celular solo debe contener números y caracteres válidos',
       ),
-    telefono: yup
+    otroTelefono: yup
       .string()
       .required('El teléfono es requerido')
       .matches(
@@ -51,83 +102,14 @@ const schema = yup
         'El teléfono solo debe contener números y caracteres válidos',
       ),
     direccion: yup.string().required('La dirección es requerida'),
-    fNacimiento: yup
-      .string()
-      .required('La fecha de nacimiento es requerida')
-      .test(
-        'date-format',
-        'La fecha debe tener el formato DD.MM.YYYY',
-        value => {
-          if (!value) return false;
-          const dateRegex = /^\d{2}\.\d{2}\.\d{4}$/;
-          return dateRegex.test(value);
-        },
-      )
-      .test('valid-date', 'La fecha debe ser válida', value => {
-        if (!value) return false;
-        // Convertir DD.MM.YYYY a Date
-        const parts = value.split('.');
-        if (parts.length !== 3) return false;
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1; // Los meses en Date son 0-indexed
-        const year = parseInt(parts[2], 10);
-        const date = new Date(year, month, day);
-        return (
-          !isNaN(date.getTime()) &&
-          date.getDate() === day &&
-          date.getMonth() === month &&
-          date.getFullYear() === year
-        );
-      })
-      .test(
-        'past-date',
-        'La fecha de nacimiento debe ser en el pasado',
-        value => {
-          if (!value) return false;
-          const parts = value.split('.');
-          if (parts.length !== 3) return false;
-          const day = parseInt(parts[0], 10);
-          const month = parseInt(parts[1], 10) - 1;
-          const year = parseInt(parts[2], 10);
-          const date = new Date(year, month, day);
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          return date < today;
-        },
-      ),
-    fAfiliacion: yup
-      .string()
-      .required('La fecha de afiliación es requerida')
-      .test(
-        'date-format',
-        'La fecha debe tener el formato DD.MM.YYYY',
-        value => {
-          if (!value) return false;
-          const dateRegex = /^\d{2}\.\d{2}\.\d{4}$/;
-          return dateRegex.test(value);
-        },
-      )
-      .test('valid-date', 'La fecha debe ser válida', value => {
-        if (!value) return false;
-        // Convertir DD.MM.YYYY a Date
-        const parts = value.split('.');
-        if (parts.length !== 3) return false;
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1; // Los meses en Date son 0-indexed
-        const year = parseInt(parts[2], 10);
-        const date = new Date(year, month, day);
-        return (
-          !isNaN(date.getTime()) &&
-          date.getDate() === day &&
-          date.getMonth() === month &&
-          date.getFullYear() === year
-        );
-      }),
-    genero: yup
+    fNacimiento: createDateValidation('La fecha de nacimiento es requerida'),
+    fAfiliacion: createDateValidation('La fecha de afiliación es requerida'),
+    sexo: yup
       .string()
       .required('El género es requerido')
       .oneOf(['M', 'F'], 'El género debe ser Masculino o Femenino'),
-    resenna: yup.string().required('La reseña es requerida'),
+    resennaPersonal: yup.string().required('La reseña es requerida'),
+    imagen: yup.string().optional(),
     interesFK: yup.string().required('El interés es requerido'),
   })
   .required();
@@ -136,12 +118,31 @@ type FormData = yup.InferType<typeof schema>;
 
 export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
   navigation,
+  route,
 }) => {
   const theme = useTheme();
+  const dispatch = useAppDispatch();
   const scrollRef = useRef<ScrollView | null>(null);
-  const [generoMenuVisible, setGeneroMenuVisible] = useState(false);
+  const [sexoMenuVisible, setSexoMenuVisible] = useState(false);
   const [interesMenuVisible, setInteresMenuVisible] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Obtener el parámetro id opcional
+  const id = route.params?.id;
+
+  // Obtener usuarioId del estado de autenticación
+  const usuarioId = useAppSelector(state => state.auth.userid);
+
+  // Consultar cliente por ID si el id es válido
+  const {
+    data: clientByIdData,
+    isLoading: isLoadingClient,
+    error: clientError,
+  } = useGetClientByIdQuery(id || '', {
+    skip: !id,
+  });
+
+  // Mutation hook para crear cliente
+  const [createClient, { isLoading: isSubmitting }] = useCreateClientMutation();
 
   // Obtener lista de intereses desde la API
   const {
@@ -168,18 +169,13 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
         apellidos: 'Pérez',
         identificacion: '1234567890',
         celular: '3001234567',
-        telefono: '3001234569',
+        otroTelefono: '3001234569',
         direccion: 'Calle 123 #45-67',
         fNacimiento: '15.01.1990',
-        fAfiliacion: (() => {
-          const today = new Date();
-          const day = String(today.getDate()).padStart(2, '0');
-          const month = String(today.getMonth() + 1).padStart(2, '0');
-          const year = today.getFullYear();
-          return `${day}.${month}.${year}`;
-        })(),
-        genero: 'M',
-        resenna: 'Lorem ipsun',
+        fAfiliacion: '15.01.2026',
+        sexo: 'M',
+        resennaPersonal: 'Lorem ipsun',
+        imagen: 'string',
         interesFK: '47c53f03-87fb-4bc4-8426-d17ef67445e0',
       }
     : {
@@ -187,12 +183,13 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
         apellidos: '',
         identificacion: '',
         celular: '',
-        telefono: '',
+        otroTelefono: '',
         direccion: '',
         fNacimiento: '',
         fAfiliacion: '',
-        genero: '',
-        resenna: '',
+        sexo: '',
+        resennaPersonal: '',
+        imagen: '',
         interesFK: '',
       };
 
@@ -201,32 +198,38 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
     handleSubmit,
     formState: { errors },
     setValue,
+    reset,
   } = useForm<FormData>({
     mode: 'onSubmit',
     resolver: yupResolver(schema) as any,
     defaultValues,
   });
 
-  // Formatear fecha a DD.MM.YYYY (útil para convertir desde otros formatos)
+  // Setear valores del formulario cuando se cargan los datos del cliente en modo edición
+  useEffect(() => {
+    if (clientByIdData && !isLoadingClient) {
+      reset({
+        nombre: clientByIdData.nombre || '',
+        apellidos: clientByIdData.apellidos || '',
+        identificacion: clientByIdData.identificacion || '',
+        celular: clientByIdData.telefonoCelular || '', // Mapear telefonoCelular -> celular
+        otroTelefono: clientByIdData.otroTelefono || '',
+        direccion: clientByIdData.direccion || '',
+        fNacimiento: convertDateFromISO(clientByIdData.fNacimiento),
+        fAfiliacion: convertDateFromISO(clientByIdData.fAfiliacion),
+        sexo: clientByIdData.sexo || '',
+        resennaPersonal: clientByIdData.resenaPersonal || '', // Mapear resenaPersonal -> resennaPersonal
+        imagen: clientByIdData.imagen || '',
+        interesFK: clientByIdData.interesesId || '', // Mapear interesesId -> interesFK
+      });
+    }
+  }, [clientByIdData, isLoadingClient, reset]);
+
+
+  // Validar formato de fecha (solo validación, sin formatear)
   const formatDateForDisplay = (dateString: string): string => {
     if (!dateString) return '';
-    // Si ya está en formato DD.MM.YYYY (completo o parcial), devolverlo tal cual
-    if (/^[\d.]*$/.test(dateString) && dateString.includes('.')) {
-      return dateString;
-    }
-    // Si está en formato YYYY-MM-DD, convertir
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) {
-      const parts = dateString.split('-');
-      return `${parts[2]}.${parts[1]}.${parts[0]}`;
-    }
-    // Intentar parsear como Date
-    const date = new Date(dateString);
-    if (!isNaN(date.getTime())) {
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}.${month}.${year}`;
-    }
+    // Devolver el valor tal cual, sin formatear
     return dateString;
   };
 
@@ -234,67 +237,59 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
     field: 'fNacimiento' | 'fAfiliacion',
     text: string,
   ) => {
-    // Permitir solo números y puntos
-    let cleaned = text.replace(/[^0-9.]/g, '');
-
+    // Solo validar formato: permitir solo números y puntos
     // Evitar múltiples puntos consecutivos
-    cleaned = cleaned.replace(/\.{2,}/g, '.');
+    const cleaned = text
+      .replace(/[^0-9.]/g, '') // Solo números y puntos
+      .replace(/\.{2,}/g, '.'); // Evitar múltiples puntos consecutivos
 
-    // Limitar formato DD.MM.YYYY
-    const parts = cleaned.split('.');
-    if (parts.length > 3) {
-      // Si hay más de 3 partes, tomar solo las primeras 3
-      cleaned = parts.slice(0, 3).join('.');
-    }
-
-    // Validar y limitar longitud de cada parte
-    const newParts = cleaned.split('.');
-    let formatted = '';
-
-    for (let i = 0; i < newParts.length; i++) {
-      if (i === 0) {
-        // Día: máximo 2 dígitos, validar rango 01-31
-        let day = newParts[i].slice(0, 2);
-        if (day) {
-          const dayNum = parseInt(day, 10);
-          if (dayNum > 31) {
-            day = '31';
-          } else if (dayNum > 0) {
-            day = day.padStart(Math.min(day.length, 2), '0');
-          }
-        }
-        formatted = day;
-      } else if (i === 1) {
-        // Mes: máximo 2 dígitos, validar rango 01-12
-        let month = newParts[i].slice(0, 2);
-        if (month) {
-          const monthNum = parseInt(month, 10);
-          if (monthNum > 12) {
-            month = '12';
-          } else if (monthNum > 0) {
-            month = month.padStart(Math.min(month.length, 2), '0');
-          }
-        }
-        formatted += '.' + month;
-      } else if (i === 2) {
-        // Año: máximo 4 dígitos
-        const year = newParts[i].slice(0, 4);
-        formatted += '.' + year;
-      }
-    }
-
-    // Actualizar el valor en el formulario
-    setValue(field, formatted, { shouldValidate: false });
+    // Actualizar el valor en el formulario y validar
+    setValue(field, cleaned, { shouldValidate: true });
   };
 
-  const handleGeneroSelect = (value: string) => {
-    setValue('genero', value);
-    setGeneroMenuVisible(false);
+  const handleSexoSelect = (value: string) => {
+    setValue('sexo', value);
+    setSexoMenuVisible(false);
   };
 
   const handleInteresSelect = (value: string) => {
     setValue('interesFK', value);
     setInteresMenuVisible(false);
+  };
+
+  // Convertir fecha de DD.MM.YYYY a formato ISO (2026-02-17T16:46:09.632Z)
+  const convertDateToISO = (dateString: string): string => {
+    if (!dateString) return '';
+    // Verificar que esté en formato DD.MM.YYYY
+    const parts = dateString.split('.');
+    if (parts.length !== 3) return dateString;
+
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // Los meses en Date son 0-indexed
+    const year = parseInt(parts[2], 10);
+
+    const date = new Date(year, month, day);
+    // Verificar que la fecha sea válida
+    if (isNaN(date.getTime())) return dateString;
+
+    return date.toISOString();
+  };
+
+  // Convertir fecha de ISO a formato DD.MM.YYYY
+  const convertDateFromISO = (isoString: string): string => {
+    if (!isoString) return '';
+    try {
+      const date = new Date(isoString);
+      if (isNaN(date.getTime())) return '';
+
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+
+      return `${day}.${month}.${year}`;
+    } catch {
+      return '';
+    }
   };
 
   const onSubmit = async (data: FormData): Promise<void> => {
@@ -304,19 +299,38 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
       animated: true,
     });
 
-    setIsSubmitting(true);
     try {
-      // TODO: Integrar con Redux aquí
-      console.log('Form data:', data);
+      const clientData = {
+        nombre: data.nombre,
+        apellidos: data.apellidos,
+        identificacion: data.identificacion,
+        celular: data.celular,
+        otroTelefono: data.otroTelefono,
+        direccion: data.direccion,
+        fNacimiento: convertDateToISO(data.fNacimiento),
+        fAfiliacion: convertDateToISO(data.fAfiliacion),
+        sexo: data.sexo as 'M' | 'F',
+        resennaPersonal: data.resennaPersonal,
+        imagen: data.imagen || '',
+        interesFK: data.interesFK,
+        usuarioId: usuarioId || '',
+      };
 
-      // Simular delay
-      await new Promise<void>(resolve => setTimeout(resolve, 1000));
+      await createClient(clientData).unwrap();
 
-      // Aquí irá la integración con Redux
-    } catch (error) {
-      console.error('Error al enviar formulario:', error);
-    } finally {
-      setIsSubmitting(false);
+      dispatch(showSuccess('Cliente creado exitosamente'));
+
+      // Navegar de vuelta después de un breve delay para que el usuario vea el mensaje
+      setTimeout(() => {
+        navigation.goBack();
+      }, 500);
+    } catch (error: any) {
+      console.error('Error al crear cliente:', error);
+      const errorMessage =
+        error?.data?.message ||
+        error?.message ||
+        'Error al crear el cliente. Por favor, intente nuevamente.';
+      dispatch(showError(errorMessage));
     }
   };
 
@@ -327,13 +341,46 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
         style={globalStyles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView
+        {isLoadingClient?<><Loading/></>:<ScrollView
           ref={scrollRef}
           contentContainerStyle={globalStyles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
           <View style={[globalStyles.content, styles.content]}>
             <View style={globalStyles.form}>
+
+              <Text>id: {id || 'No proporcionado'}</Text>
+
+              {/* Mostrar datos del cliente si existe id y se cargaron los datos */}
+              {id && (
+                <View style={{ marginTop: 10, marginBottom: 10 }}>
+                  {isLoadingClient && (
+                    <Text style={{ color: theme.colors.primary }}>
+                      Cargando datos del cliente...
+                    </Text>
+                  )}
+                  {!!clientError && (
+                    <Text style={{ color: theme.colors.error }}>
+                      Error al cargar datos del cliente
+                    </Text>
+                  )}
+                  {clientByIdData && !isLoadingClient && (
+                    <Text
+                      style={{
+                        fontFamily: 'monospace',
+                        fontSize: 12,
+                        color: theme.colors.onSurface,
+                        backgroundColor: theme.colors.surfaceVariant,
+                        padding: 10,
+                        borderRadius: 4,
+                      }}
+                    >
+                      {JSON.stringify(clientByIdData, null, 2)}
+                    </Text>
+                  )}
+                </View>
+              )}
+
               {/* Identificación */}
               <Controller
                 control={control}
@@ -427,8 +474,8 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
                 render={({ field: { value } }) => (
                   <View>
                     <Menu
-                      visible={generoMenuVisible}
-                      onDismiss={() => setGeneroMenuVisible(false)}
+                      visible={sexoMenuVisible}
+                      onDismiss={() => setSexoMenuVisible(false)}
                       anchor={
                         <TextInput
                           label="Género *"
@@ -437,12 +484,12 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
                               ?.label || ''
                           }
                           mode="outlined"
-                          error={!!errors.genero}
+                          error={!!errors.sexo}
                           editable={false}
                           right={
                             <TextInput.Icon
                               icon="chevron-down"
-                              onPress={() => setGeneroMenuVisible(true)}
+                              onPress={() => setSexoMenuVisible(true)}
                             />
                           }
                           style={[
@@ -458,23 +505,23 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
                       {GENERO_OPTIONS.map(option => (
                         <Menu.Item
                           key={option.value}
-                          onPress={() => handleGeneroSelect(option.value)}
+                          onPress={() => handleSexoSelect(option.value)}
                           title={option.label}
                         />
                       ))}
                     </Menu>
                   </View>
                 )}
-                name="genero"
+                name="sexo"
               />
-              {errors.genero && (
+              {errors.sexo && (
                 <Text
                   style={[
                     globalStyles.errorText,
                     { color: theme.colors.error },
                   ]}
                 >
-                  {errors.genero.message}
+                  {errors.sexo.message}
                 </Text>
               )}
 
@@ -592,21 +639,21 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
                     onBlur={onBlur}
                     mode="outlined"
                     keyboardType="phone-pad"
-                    error={!!errors.telefono}
+                    error={!!errors.otroTelefono}
                     style={globalStyles.input}
                     contentStyle={globalStyles.inputContent}
                   />
                 )}
-                name="telefono"
+                name="otroTelefono"
               />
-              {errors.telefono && (
+              {errors.otroTelefono && (
                 <Text
                   style={[
                     globalStyles.errorText,
                     { color: theme.colors.error },
                   ]}
                 >
-                  {errors.telefono.message}
+                  {errors.otroTelefono.message}
                 </Text>
               )}
 
@@ -632,12 +679,12 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
                           editable={false}
                           disabled={isLoadingInterests}
                           right={
-                            !isLoadingInterests && (
+                            !isLoadingInterests ? (
                               <TextInput.Icon
                                 icon="chevron-down"
                                 onPress={() => setInteresMenuVisible(true)}
                               />
-                            )
+                            ) : undefined
                           }
                           style={[
                             globalStyles.input,
@@ -725,21 +772,21 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
                     mode="outlined"
                     multiline
                     numberOfLines={4}
-                    error={!!errors.resenna}
+                    error={!!errors.resennaPersonal}
                     style={[globalStyles.input, globalStyles.tallInput]}
                     contentStyle={globalStyles.inputContent}
                   />
                 )}
-                name="resenna"
+                name="resennaPersonal"
               />
-              {errors.resenna && (
+              {errors.resennaPersonal && (
                 <Text
                   style={[
                     globalStyles.errorText,
                     { color: theme.colors.error },
                   ]}
                 >
-                  {errors.resenna.message}
+                  {errors.resennaPersonal.message}
                 </Text>
               )}
 
@@ -765,8 +812,13 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               </View>
             </View>
           </View>
-        </ScrollView>
+        </ScrollView>}
+
       </KeyboardAvoidingView>
+      <LoadingOverlay
+        visible={isSubmitting}
+        message="Guardando cliente..."
+      />
     </View>
   );
 };

@@ -7,5 +7,5 @@ export type RootStackParamList = {
   Register: undefined;
   Dashboard: undefined;
   ClientList: undefined;
-  ClientForm: { clientId?: string } | undefined;
+  ClientForm: { id?: string } | undefined;
 };

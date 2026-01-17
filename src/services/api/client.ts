@@ -51,6 +51,11 @@ axiosInstance.interceptors.request.use(
       params: config.params,
     });
 
+    // Log específico del body
+    if (config.data) {
+      console.log('📦 [API Request Body]', JSON.stringify(config.data, null, 2));
+    }
+
     return config;
   },
   error => {

@@ -3,18 +3,27 @@ import { API_ENDPOINTS } from '../../services/api/endpoints';
 import { baseQuery } from './baseQuery';
 
 // Types for client API
+export interface ClientListItem {
+  id: string;
+  identificacion: string;
+  nombre: string;
+  apellidos: string;
+}
+
 export interface Client {
-  idCliente?: string | number;
+  id: string;
   nombre: string;
   apellidos: string;
   identificacion: string;
-  celular: string;
-  telefono: string;
+  telefonoCelular: string;
+  otroTelefono: string;
   direccion: string;
-  fNacimiento: string; // Format: DD.MM.YYYY
-  fAfiliacion: string; // Format: DD.MM.YYYY
-  genero: 'M' | 'F';
-  interesFK: string; // UUID
+  fNacimiento: string;
+  fAfiliacion: string;
+  sexo: 'M' | 'F';
+  resenaPersonal: string;
+  imagen: string;
+  interesesId: string; // UUID
 }
 
 export interface CreateClientRequest {
@@ -22,16 +31,23 @@ export interface CreateClientRequest {
   apellidos: string;
   identificacion: string;
   celular: string;
-  telefono: string;
+  otroTelefono: string;
   direccion: string;
   fNacimiento: string;
   fAfiliacion: string;
-  genero: 'M' | 'F';
+  sexo: 'M' | 'F';
+  resennaPersonal: string;
+  imagen: string;
   interesFK: string;
+  usuarioId: string;
 }
 
+// telefonoCelular vs celular
+// resenaPersonal vs resennaPersonal
+// interesesId vs interesFK
+
 export interface UpdateClientRequest extends CreateClientRequest {
-  idCliente: string | number;
+  id: string | number;
 }
 
 export interface ClientListResponse {
@@ -39,12 +55,7 @@ export interface ClientListResponse {
   total?: number;
 }
 
-export interface ClientListItem {
-  id: string;
-  identificacion: string;
-  nombre: string;
-  apellidos: string;
-}
+
 
 export interface GetClientsListRequest {
   usuarioId: string;
@@ -69,7 +80,15 @@ export const clientApi = createApi({
       }),
       providesTags: ['Client'],
     }),
-    getClientById: builder.query<Client, string | number>({
+    createClient: builder.mutation<void, CreateClientRequest>({
+      query: clientData => ({
+        url: API_ENDPOINTS.CLIENTE.CREAR,
+        method: 'POST',
+        data: clientData,
+      }),
+      invalidatesTags: ['Client'],
+    }),
+    getClientById: builder.query<Client, string>({
       query: idCliente => ({
         url: API_ENDPOINTS.CLIENTE.OBTENER(idCliente),
         method: 'GET',
@@ -78,25 +97,19 @@ export const clientApi = createApi({
         { type: 'Client', id: idCliente },
       ],
     }),
-    createClient: builder.mutation<Client, CreateClientRequest>({
-      query: clientData => ({
-        url: API_ENDPOINTS.CLIENTE.CREAR,
-        method: 'POST',
-        data: clientData,
-      }),
-      invalidatesTags: ['Client'],
-    }),
     updateClient: builder.mutation<Client, UpdateClientRequest>({
       query: clientData => ({
         url: API_ENDPOINTS.CLIENTE.ACTUALIZAR,
-        method: 'PUT',
+        method: 'POST',
         data: clientData,
       }),
-      invalidatesTags: (result, error, { idCliente }) => [
+      invalidatesTags: (result, error, { id }) => [
         'Client',
-        { type: 'Client', id: idCliente },
+        { type: 'Client', id },
       ],
     }),
+
+
     deleteClient: builder.mutation<void, string | number>({
       query: idCliente => ({
         url: API_ENDPOINTS.CLIENTE.ELIMINAR(idCliente),
