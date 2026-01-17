@@ -1,6 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { API_ENDPOINTS } from '../../services/api/endpoints';
-import defaultAxiosInstance from '../../services/api/client';
+import { baseQuery } from './baseQuery';
 
 // Types for auth API
 export interface LoginRequest {
@@ -28,24 +28,7 @@ export interface RefreshTokenRequest {
 // RTK Query API slice
 export const authApi = createApi({
   reducerPath: 'authApi',
-  baseQuery: async (args: { url: string; method?: string; data?: any }) => {
-    try {
-      const { url, method = 'POST', data } = args;
-      const response = await defaultAxiosInstance.request({
-        url,
-        method: method.toLowerCase() as any,
-        data,
-      });
-      return { data: response.data };
-    } catch (error: any) {
-      return {
-        error: {
-          status: error.response?.status,
-          data: error.response?.data || error.message,
-        },
-      };
-    }
-  },
+  baseQuery,
   tagTypes: [],
   endpoints: builder => ({
     register: builder.mutation<AuthResponse, RegisterRequest>({
