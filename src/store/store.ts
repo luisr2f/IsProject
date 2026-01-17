@@ -15,6 +15,7 @@ import { combineReducers } from 'redux';
 import authReducer from './slices/authSlice';
 import snackbarReducer from './slices/snackbarSlice';
 import { authApi } from './api/authApi';
+import { interestsApi } from './api/interestsApi';
 
 const persistConfig = {
   key: 'root',
@@ -27,6 +28,7 @@ const reducers = combineReducers({
   auth: authReducer, //This reducer is to set credentials & consume state in application
   snackbar: snackbarReducer, //Snackbar state (no persist)
   [authApi.reducerPath]: authApi.reducer, //RTK Query API reducer
+  [interestsApi.reducerPath]: interestsApi.reducer, //RTK Query Interests API reducer
 });
 
 const persistedReducer = persistReducer(persistConfig, reducers);
@@ -39,7 +41,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(authApi.middleware),
+    }).concat(authApi.middleware, interestsApi.middleware),
 });
 
 export const persistor = persistStore(store);
