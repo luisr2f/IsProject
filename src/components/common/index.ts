@@ -11,3 +11,5 @@ export {
 } from './button';
 export { GlobalSnackbar } from './snackbar';
 export { AppBar } from './appbar';
+export { LoadingOverlay } from './loadingOverlay';
+export type { LoadingOverlayProps } from './loadingOverlay';
