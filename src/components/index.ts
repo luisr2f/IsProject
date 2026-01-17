@@ -1,0 +1,13 @@
+/**
+ * Exportaciones centralizadas de componentes
+ * Facilita los imports: import { Button, Card } from '@/components'
+ */
+
+// Componentes comunes
+export { Logo } from './common/logo';
+export { Button } from './common/button';
+// export { default as Card } from './common/Card';
+// export { default as Input } from './common/Input';
+
+// Componentes de formularios
+// export { default as FormField } from './forms/FormField';
