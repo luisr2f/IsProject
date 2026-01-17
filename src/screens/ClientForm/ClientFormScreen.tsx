@@ -21,6 +21,7 @@ import { useGetInterestsListQuery } from '@/store/api/interestsApi';
 import { useAppSelector, useAppDispatch } from '@/store/hooks';
 import {
   useCreateClientMutation,
+  useUpdateClientMutation,
   useGetClientByIdQuery,
 } from '@/store/api/clientApi';
 import { showSuccess, showError } from '@/store/slices/snackbarSlice';
@@ -141,8 +142,11 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
     skip: !id,
   });
 
-  // Mutation hook para crear cliente
-  const [createClient, { isLoading: isSubmitting }] = useCreateClientMutation();
+  // Mutation hooks para crear y actualizar cliente
+  const [createClient, { isLoading: isCreating }] = useCreateClientMutation();
+  const [updateClient, { isLoading: isUpdating }] = useUpdateClientMutation();
+
+  const isSubmitting = isCreating || isUpdating;
 
   // Obtener lista de intereses desde la API
   const {
@@ -316,20 +320,26 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
         usuarioId: usuarioId || '',
       };
 
-      await createClient(clientData).unwrap();
-
-      dispatch(showSuccess('Cliente creado exitosamente'));
+      // Si hay un id, estamos en modo edición, usar updateClient
+      if (id) {
+        await updateClient({ ...clientData, id }).unwrap();
+        dispatch(showSuccess('Cliente actualizado exitosamente'));
+      } else {
+        // Si no hay id, estamos en modo creación, usar createClient
+        await createClient(clientData).unwrap();
+        dispatch(showSuccess('Cliente creado exitosamente'));
+      }
 
       // Navegar de vuelta después de un breve delay para que el usuario vea el mensaje
       setTimeout(() => {
         navigation.goBack();
       }, 500);
     } catch (error: any) {
-      console.error('Error al crear cliente:', error);
+      console.error(`Error al ${id ? 'actualizar' : 'crear'} cliente:`, error);
       const errorMessage =
         error?.data?.message ||
         error?.message ||
-        'Error al crear el cliente. Por favor, intente nuevamente.';
+        `Error al ${id ? 'actualizar' : 'crear'} el cliente. Por favor, intente nuevamente.`;
       dispatch(showError(errorMessage));
     }
   };
@@ -817,7 +827,7 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
       </KeyboardAvoidingView>
       <LoadingOverlay
         visible={isSubmitting}
-        message="Guardando cliente..."
+        message={id ? 'Actualizando cliente...' : 'Guardando cliente...'}
       />
     </View>
   );

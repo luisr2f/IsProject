@@ -97,7 +97,7 @@ export const clientApi = createApi({
         { type: 'Client', id: idCliente },
       ],
     }),
-    updateClient: builder.mutation<Client, UpdateClientRequest>({
+    updateClient: builder.mutation<void, UpdateClientRequest>({
       query: clientData => ({
         url: API_ENDPOINTS.CLIENTE.ACTUALIZAR,
         method: 'POST',
