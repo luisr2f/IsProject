@@ -17,7 +17,7 @@ import { globalStyles } from '@/theme';
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 type FormData = {
-  email: string;
+  username: string;
   password: string;
 };
 
@@ -30,10 +30,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const schema = yup
     .object()
     .shape({
-      email: yup
+      username: yup
         .string()
-        .required('El correo electrónico es requerido')
-        .email('El correo electrónico no es válido'),
+        .required('El usuario es requerido'),
       password: yup
         .string()
         .required('La contraseña es requerida'),
@@ -48,7 +47,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     mode: 'onSubmit',
     resolver: yupResolver(schema),
     defaultValues: {
-      email: '',
+      username: '',
       password: '',
     },
   });
@@ -64,7 +63,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     try {
       // Aquí iría la lógica de login
       console.log('Datos del formulario:', data);
-      // await signIn({ email: data.email, password: data.password });
+      // await signIn({ username: data.username, password: data.password });
     } catch (error) {
       console.error('Error en el login:', error);
     } finally {
@@ -108,19 +107,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                   onChangeText={onChange}
                   onBlur={onBlur}
                   mode="outlined"
-                  keyboardType="email-address"
+                  keyboardType="default"
                   autoCapitalize="none"
-                  autoComplete="email"
-                  error={!!errors.email}
+                  autoComplete="username"
+                  error={!!errors.username}
                   style={globalStyles.input}
                   contentStyle={globalStyles.inputContent}
                 />
               )}
-              name="email"
+              name="username"
             />
-            {errors.email && (
+            {errors.username && (
               <Text style={[globalStyles.errorText, { color: theme.colors.error }]}>
-                {errors.email.message}
+                {errors.username.message}
               </Text>
             )}
 
