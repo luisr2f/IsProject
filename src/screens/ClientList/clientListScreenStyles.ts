@@ -9,6 +9,13 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F2F2F7',
   },
+  buttonContainer: {
+    padding: 16,
+    paddingTop: 20,
+  },
+  newClientButton: {
+    width: '100%',
+  },
   listContainer: {
     padding: 16,
     paddingTop: 20,

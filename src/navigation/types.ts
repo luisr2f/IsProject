@@ -7,4 +7,5 @@ export type RootStackParamList = {
   Register: undefined;
   Dashboard: undefined;
   ClientList: undefined;
+  ClientForm: undefined;
 };

@@ -32,10 +32,13 @@ export const globalStyles = StyleSheet.create({
   inputContent: {
     fontSize: 16,
   },
+  tallInput: {
+    minHeight: 100,
+  },
   errorText: {
     fontSize: 12,
     marginTop: -8,
-    marginBottom: 8,
+    marginBottom: 12,
   },
   registerContainer: {
     flexDirection: 'row',

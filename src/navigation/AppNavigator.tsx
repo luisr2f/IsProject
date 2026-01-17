@@ -5,6 +5,7 @@ import { LoginScreen } from '@/screens/Login';
 import { RegisterScreen } from '@/screens/Register';
 import { DashboardScreen } from '@/screens/Dashboard';
 import { ClientListScreen } from '@/screens/ClientList';
+import { ClientFormScreen } from '@/screens/ClientForm';
 import { useAppSelector } from '@/store/hooks';
 import type { RootStackParamList } from './types';
 
@@ -41,6 +42,7 @@ export const AppNavigator: React.FC = () => {
               }}
             />
             <Stack.Screen name="ClientList" component={ClientListScreen} />
+            <Stack.Screen name="ClientForm" component={ClientFormScreen} />
           </>
         )}
       </Stack.Navigator>
