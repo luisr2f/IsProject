@@ -25,7 +25,7 @@ export interface LoadingProps {
  */
 export const Loading: React.FC<LoadingProps> = ({
   color,
-  size = 'large',
+  size = 32,
 }) => {
   const theme = useTheme();
 

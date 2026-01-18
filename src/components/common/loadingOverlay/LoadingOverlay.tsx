@@ -37,7 +37,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   visible,
   message,
   color,
-  size = 'large',
+  size = 32,
 }) => {
   const theme = useTheme();
 
