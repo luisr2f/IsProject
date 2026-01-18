@@ -3,6 +3,7 @@ import { Appbar } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logout } from '@/store/slices/authSlice';
+import { styles } from './appBarStyles';
 
 type AppBarType = 'home' | 'mainPage' | 'internalPage';
 
@@ -33,8 +34,14 @@ export const AppBar: React.FC<AppBarProps> = ({
     navigation.navigate('Dashboard' as never);
   };
 
+  const shouldShowBorder = type === 'mainPage' || type === 'internalPage';
+
   return (
-    <Appbar.Header>
+    <Appbar.Header
+      style={[
+        styles.header,
+        shouldShowBorder && styles.headerWithBorder,
+      ]}>
       {type === 'home' ? (
         <Appbar.Action icon="account-circle-outline" size={34} />
       ) : type === 'mainPage' ? (

@@ -1,13 +1,13 @@
+import { colors } from '@/theme';
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.backgroundDashboard,
   },
   content: {
     flex: 1,
-    backgroundColor: '#F2F2F7',
     justifyContent: 'flex-start',
     alignItems: 'center',
     paddingTop: 30,

@@ -1,9 +1,10 @@
+import { colors } from '@/theme';
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
   },
   content: {
     flex: 1,
@@ -16,5 +17,8 @@ export const styles = StyleSheet.create({
   },
   buttonFullWidth: {
     width: '100%',
+  },
+  scrollView: {
+    backgroundColor: colors.background,
   },
 });

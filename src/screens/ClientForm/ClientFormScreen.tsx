@@ -335,16 +335,17 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
   };
 
   return (
-    <View style={[globalStyles.container]}>
+    <View style={styles.container}>
       <AppBar title="Mantenimiento de Clientes" type="internalPage" />
       <KeyboardAvoidingView
-        style={globalStyles.container}
+        style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         {isLoadingClient ? <><Loading /></> : <ScrollView
           ref={scrollRef}
           contentContainerStyle={globalStyles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          style={styles.scrollView}
         >
           <View style={[globalStyles.content, styles.content]}>
             <View style={globalStyles.form}>

@@ -8,6 +8,7 @@ import { useGetClientsListQuery, ClientListItem } from '@/store/api/clientApi';
 import { useAppSelector } from '@/store/hooks';
 import { styles } from './clientListScreenStyles';
 import { Loading } from '@/components/common/loading';
+import { globalStyles } from '@/theme/globalStyles';
 
 type ClientListScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -122,14 +123,14 @@ export const ClientListScreen: React.FC<ClientListScreenProps> = ({
   const renderEmptyState = () => {
     if (isLoading) {
       return (
-        <Loading />
+        <Loading style={styles.loading} />
       );
     }
 
     if (error) {
       return (
-        <View style={styles.emptyContainer}>
-          <Text variant="bodyLarge" style={styles.errorText}>
+        <View style={globalStyles.emptyContainer}>
+          <Text variant="bodyLarge" style={globalStyles.emptyErrorText}>
             Error al cargar clientes
           </Text>
         </View>
@@ -138,8 +139,8 @@ export const ClientListScreen: React.FC<ClientListScreenProps> = ({
 
     if (!clients || clients.length === 0) {
       return (
-        <View style={styles.emptyContainer}>
-          <Text variant="bodyLarge" style={styles.emptyText}>
+        <View style={globalStyles.emptyContainer}>
+          <Text variant="bodyLarge" style={globalStyles.emptyText}>
             No hay clientes disponibles
           </Text>
         </View>
@@ -148,8 +149,8 @@ export const ClientListScreen: React.FC<ClientListScreenProps> = ({
 
     if (searchQuery.trim() && filteredClients.length === 0) {
       return (
-        <View style={styles.emptyContainer}>
-          <Text variant="bodyLarge" style={styles.emptyText}>
+        <View style={globalStyles.emptyContainer}>
+          <Text variant="bodyLarge" style={globalStyles.emptyText}>
             No se encontraron clientes que coincidan con la búsqueda
           </Text>
         </View>
@@ -194,6 +195,8 @@ export const ClientListScreen: React.FC<ClientListScreenProps> = ({
           ListEmptyComponent={renderEmptyState}
           showsVerticalScrollIndicator={false}
         />
+
+
       </View>
     </View>
   );

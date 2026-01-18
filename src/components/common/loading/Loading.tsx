@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, ViewStyle } from 'react-native';
 import { ActivityIndicator, useTheme } from 'react-native-paper';
 import { styles } from './loadingStyles';
 
@@ -12,6 +12,10 @@ export interface LoadingProps {
    * Tamaño del ActivityIndicator. Por defecto es 'large'
    */
   size?: 'small' | 'large' | number;
+  /**
+   * Estilos adicionales para el contenedor. Se concatenarán con los estilos por defecto
+   */
+  style?: ViewStyle;
 }
 
 /**
@@ -26,11 +30,12 @@ export interface LoadingProps {
 export const Loading: React.FC<LoadingProps> = ({
   color,
   size = 32,
+  style,
 }) => {
   const theme = useTheme();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <ActivityIndicator
         size={size}
         animating={true}
