@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   KeyboardAvoidingView,
@@ -6,13 +6,13 @@ import {
   ScrollView,
   Keyboard,
 } from 'react-native';
-import { Text, TextInput, useTheme, Menu } from 'react-native-paper';
+import { Text, TextInput, useTheme } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 import { useForm, Controller } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { AppBar } from '@/components/common';
+import { AppBar, SelectModal } from '@/components/common';
 import { Button, LoadingOverlay } from '@/components';
 import { globalStyles } from '@/theme';
 import { styles } from './clientFormScreenStyles';
@@ -26,6 +26,8 @@ import {
 } from '@/store/api/clientApi';
 import { showSuccess, showError } from '@/store/slices/snackbarSlice';
 import { Loading } from '@/components/common/loading';
+import { SelectPhoto } from '@/components/selectPhoto';
+import { ClientDelete } from '@/components/clientDelete';
 
 type ClientFormScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -124,8 +126,6 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
   const theme = useTheme();
   const dispatch = useAppDispatch();
   const scrollRef = useRef<ScrollView | null>(null);
-  const [sexoMenuVisible, setSexoMenuVisible] = useState(false);
-  const [interesMenuVisible, setInteresMenuVisible] = useState(false);
 
   // Obtener el parámetro id opcional
   const id = route.params?.id;
@@ -169,33 +169,33 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
     APP_CONFIG.NODE_ENV === 'development' || APP_CONFIG.NODE_ENV === 'develop';
   const defaultValues = isDevelopment
     ? {
-        nombre: 'Juan',
-        apellidos: 'Pérez',
-        identificacion: '1234567890',
-        celular: '3001234567',
-        otroTelefono: '3001234569',
-        direccion: 'Calle 123 #45-67',
-        fNacimiento: '15.01.1990',
-        fAfiliacion: '15.01.2026',
-        sexo: 'M',
-        resennaPersonal: 'Lorem ipsun',
-        imagen: 'string',
-        interesFK: '47c53f03-87fb-4bc4-8426-d17ef67445e0',
-      }
+      nombre: 'Juan',
+      apellidos: 'Pérez',
+      identificacion: '1234567890',
+      celular: '3001234567',
+      otroTelefono: '3001234569',
+      direccion: 'Calle 123 #45-67',
+      fNacimiento: '15.01.1990',
+      fAfiliacion: '15.01.2026',
+      sexo: 'M',
+      resennaPersonal: 'Lorem ipsun',
+      imagen: 'string',
+      interesFK: '47c53f03-87fb-4bc4-8426-d17ef67445e0',
+    }
     : {
-        nombre: '',
-        apellidos: '',
-        identificacion: '',
-        celular: '',
-        otroTelefono: '',
-        direccion: '',
-        fNacimiento: '',
-        fAfiliacion: '',
-        sexo: '',
-        resennaPersonal: '',
-        imagen: '',
-        interesFK: '',
-      };
+      nombre: '',
+      apellidos: '',
+      identificacion: '',
+      celular: '',
+      otroTelefono: '',
+      direccion: '',
+      fNacimiento: '',
+      fAfiliacion: '',
+      sexo: '',
+      resennaPersonal: '',
+      imagen: '',
+      interesFK: '',
+    };
 
   const {
     control,
@@ -249,16 +249,6 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
 
     // Actualizar el valor en el formulario y validar
     setValue(field, cleaned, { shouldValidate: true });
-  };
-
-  const handleSexoSelect = (value: string) => {
-    setValue('sexo', value);
-    setSexoMenuVisible(false);
-  };
-
-  const handleInteresSelect = (value: string) => {
-    setValue('interesFK', value);
-    setInteresMenuVisible(false);
   };
 
   // Convertir fecha de DD.MM.YYYY a formato ISO (2026-02-17T16:46:09.632Z)
@@ -351,7 +341,7 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
         style={globalStyles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {isLoadingClient?<><Loading/></>:<ScrollView
+        {isLoadingClient ? <><Loading /></> : <ScrollView
           ref={scrollRef}
           contentContainerStyle={globalStyles.scrollContent}
           keyboardShouldPersistTaps="handled"
@@ -359,10 +349,25 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
           <View style={[globalStyles.content, styles.content]}>
             <View style={globalStyles.form}>
 
-              <Text>id: {id || 'No proporcionado'}</Text>
+              <Controller
+                control={control}
+                render={({ field: { value } }) => (
+                  <SelectPhoto
+                    base64={value}
+                    onImageSelected={(base64) => {
+                      setValue('imagen', base64, { shouldValidate: true });
+                    }}
+                  />
+                )}
+                name="imagen"
+              />
+
+
 
               {/* Mostrar datos del cliente si existe id y se cargaron los datos */}
-              {id && (
+              {/*<Text>id: {id || 'No proporcionado'}</Text>*/}
+
+              {/*id && (
                 <View style={{ marginTop: 10, marginBottom: 10 }}>
                   {isLoadingClient && (
                     <Text style={{ color: theme.colors.primary }}>
@@ -389,7 +394,7 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
                     </Text>
                   )}
                 </View>
-              )}
+              )*/}
 
               {/* Identificación */}
               <Controller
@@ -481,59 +486,21 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               {/* Género */}
               <Controller
                 control={control}
-                render={({ field: { value } }) => (
-                  <View>
-                    <Menu
-                      visible={sexoMenuVisible}
-                      onDismiss={() => setSexoMenuVisible(false)}
-                      anchor={
-                        <TextInput
-                          label="Género *"
-                          value={
-                            GENERO_OPTIONS.find(opt => opt.value === value)
-                              ?.label || ''
-                          }
-                          mode="outlined"
-                          error={!!errors.sexo}
-                          editable={false}
-                          right={
-                            <TextInput.Icon
-                              icon="chevron-down"
-                              onPress={() => setSexoMenuVisible(true)}
-                            />
-                          }
-                          style={[
-                            globalStyles.input,
-                            Platform.OS === 'ios' && {
-                              backgroundColor: theme.colors.surface,
-                            },
-                          ]}
-                          contentStyle={globalStyles.inputContent}
-                        />
-                      }
-                    >
-                      {GENERO_OPTIONS.map(option => (
-                        <Menu.Item
-                          key={option.value}
-                          onPress={() => handleSexoSelect(option.value)}
-                          title={option.label}
-                        />
-                      ))}
-                    </Menu>
-                  </View>
+                render={({ field: { value, onChange } }) => (
+                  <SelectModal
+                    label="Género"
+                    placeholder="Selecciona el género"
+                    options={GENERO_OPTIONS}
+                    value={value}
+                    onSelect={(selectedValue) => onChange(selectedValue as string)}
+                    required
+                    error={errors.sexo?.message}
+                    style={globalStyles.input}
+                    mode="outlined"
+                  />
                 )}
                 name="sexo"
               />
-              {errors.sexo && (
-                <Text
-                  style={[
-                    globalStyles.errorText,
-                    { color: theme.colors.error },
-                  ]}
-                >
-                  {errors.sexo.message}
-                </Text>
-              )}
 
               {/* Fecha de Nacimiento */}
               <Controller
@@ -670,74 +637,31 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
               {/* Interés */}
               <Controller
                 control={control}
-                render={({ field: { value } }) => (
-                  <View>
-                    <Menu
-                      visible={interesMenuVisible}
-                      onDismiss={() => setInteresMenuVisible(false)}
-                      anchor={
-                        <TextInput
-                          label="Interés *"
-                          value={
-                            isLoadingInterests
-                              ? 'Cargando...'
-                              : INTERES_OPTIONS.find(opt => opt.value === value)
-                                  ?.label || ''
-                          }
-                          mode="outlined"
-                          error={!!errors.interesFK || !!interestsError}
-                          editable={false}
-                          disabled={isLoadingInterests}
-                          right={
-                            !isLoadingInterests ? (
-                              <TextInput.Icon
-                                icon="chevron-down"
-                                onPress={() => setInteresMenuVisible(true)}
-                              />
-                            ) : undefined
-                          }
-                          style={[
-                            globalStyles.input,
-                            Platform.OS === 'ios' && {
-                              backgroundColor: theme.colors.surface,
-                            },
-                          ]}
-                          contentStyle={globalStyles.inputContent}
-                        />
-                      }
-                    >
-                      {INTERES_OPTIONS.map(option => (
-                        <Menu.Item
-                          key={option.value}
-                          onPress={() => handleInteresSelect(option.value)}
-                          title={option.label}
-                        />
-                      ))}
-                    </Menu>
-                  </View>
+                render={({ field: { value, onChange } }) => (
+                  <SelectModal
+                    label="Interés"
+                    placeholder={
+                      isLoadingInterests
+                        ? 'Cargando...'
+                        : 'Selecciona un interés'
+                    }
+                    options={INTERES_OPTIONS}
+                    value={value}
+                    onSelect={(selectedValue) =>
+                      onChange(selectedValue as string)
+                    }
+                    required
+                    disabled={isLoadingInterests}
+                    error={
+                      errors.interesFK?.message ||
+                      (interestsError ? 'Error al cargar los intereses' : undefined)
+                    }
+                    style={globalStyles.input}
+                    mode="outlined"
+                  />
                 )}
                 name="interesFK"
               />
-              {errors.interesFK && (
-                <Text
-                  style={[
-                    globalStyles.errorText,
-                    { color: theme.colors.error },
-                  ]}
-                >
-                  {errors.interesFK.message}
-                </Text>
-              )}
-              {interestsError && (
-                <Text
-                  style={[
-                    globalStyles.errorText,
-                    { color: theme.colors.error },
-                  ]}
-                >
-                  Error al cargar los intereses
-                </Text>
-              )}
 
               {/* Dirección */}
               <Controller
@@ -802,20 +726,23 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
 
               {/* Botones */}
               <View style={globalStyles.buttonsContainer}>
-                <Button
-                  variant="secondary"
-                  onPress={() => navigation.goBack()}
-                  disabled={isSubmitting}
-                  style={styles.button}
-                >
-                  Cancelar
-                </Button>
+                {id && (
+                  <ClientDelete
+                    clientId={id}
+                    onDeleteSuccess={() => {
+                      setTimeout(() => {
+                        navigation.goBack();
+                      }, 500);
+                    }}
+                    style={styles.button}
+                  />
+                )}
                 <Button
                   variant="primary"
                   onPress={handleSubmit(onSubmit as any)}
                   loading={isSubmitting}
                   disabled={isSubmitting}
-                  style={styles.button}
+                  style={id ? styles.button : styles.buttonFullWidth}
                 >
                   {isSubmitting ? 'Guardando...' : 'Guardar'}
                 </Button>

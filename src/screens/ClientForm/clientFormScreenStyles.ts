@@ -14,4 +14,7 @@ export const styles = StyleSheet.create({
     minWidth: 0,
     flexShrink: 1,
   },
+  buttonFullWidth: {
+    width: '100%',
+  },
 });
