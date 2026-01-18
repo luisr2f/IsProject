@@ -10,6 +10,7 @@ import {
   Text,
   TextInput,
   Button as PaperButton,
+  Checkbox,
   useTheme,
 } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -20,6 +21,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { Logo, Button } from '@/components';
 import { globalStyles } from '@/theme';
 import { useAppDispatch } from '@/store/hooks';
+import { styles } from './loginScreenStyles';
 import { useLoginMutation } from '@/store/api/authApi';
 import { setCredentials } from '@/store/slices/authSlice';
 import { showError } from '@/store/slices/snackbarSlice';
@@ -37,6 +39,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const dispatch = useAppDispatch();
   const scrollRef = useRef<ScrollView | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   // Use RTK Query mutation for login
   const [login, { isLoading, reset: resetLogin }] = useLoginMutation();
@@ -88,6 +91,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
         password: data.password,
       }).unwrap();
 
+      // Validar que la respuesta tenga la estructura esperada
+      if (!response || !response.token || !response.userid || !response.username) {
+        throw new Error('Respuesta del servidor inválida. Faltan datos de autenticación.');
+      }
+
       // Update Redux state with credentials
       dispatch(
         setCredentials({
@@ -95,16 +103,27 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
           expiration: response.expiration,
           userid: response.userid,
           username: response.username,
+          rememberMe: rememberMe,
         }),
       );
 
       // El cambio de estado de autenticación manejará la navegación automáticamente
+      // La limpieza del storage cuando rememberMe es false se maneja en App.tsx
     } catch (error: any) {
       // Handle error and show snackbar
-      const errorMessage =
-        error?.data?.message ||
-        error?.message ||
-        'Error al iniciar sesión. Por favor, intente nuevamente.';
+      let errorMessage = 'Error al iniciar sesión. Por favor, intente nuevamente.';
+
+      if (error?.data) {
+        // Si error.data es un string, usarlo directamente
+        if (typeof error.data === 'string') {
+          errorMessage = error.data;
+        } else if (error.data?.message) {
+          errorMessage = error.data.message;
+        }
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+
       dispatch(showError(errorMessage));
       console.error('Error en el login:', error);
     }
@@ -195,6 +214,22 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
                 {errors.password.message}
               </Text>
             )}
+
+            <View style={styles.rememberMeContainer}>
+              <Checkbox.Android
+                status={rememberMe ? 'checked' : 'unchecked'}
+                onPress={() => setRememberMe(!rememberMe)}
+                uncheckedColor={theme.colors.outline}
+                color={theme.colors.primary}
+              />
+              <Text
+                variant="bodyMedium"
+                style={{ color: theme.colors.onSurface }}
+                onPress={() => setRememberMe(!rememberMe)}
+              >
+                Recordarme
+              </Text>
+            </View>
 
             <Button
               variant="primary"

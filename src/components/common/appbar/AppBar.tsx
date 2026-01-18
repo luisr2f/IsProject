@@ -3,6 +3,7 @@ import { Appbar } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logout } from '@/store/slices/authSlice';
+import { persistor } from '@/store/store';
 import { styles } from './appBarStyles';
 
 type AppBarType = 'home' | 'mainPage' | 'internalPage';
@@ -20,8 +21,14 @@ export const AppBar: React.FC<AppBarProps> = ({
   const navigation = useNavigation();
   const username = useAppSelector(state => state.auth.username) || '';
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     dispatch(logout());
+    // Purgar el storage al hacer logout para limpiar toda la sesión
+    try {
+      await persistor.purge();
+    } catch (error) {
+      console.error('Error purging storage on logout:', error);
+    }
   };
 
   const handleBack = () => {

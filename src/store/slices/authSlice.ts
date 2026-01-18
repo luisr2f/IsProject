@@ -6,6 +6,7 @@ interface AuthState {
   expiration: string | null;
   userid: string | null;
   username: string | null;
+  rememberMe: boolean;
 }
 
 const initialState: AuthState = {
@@ -14,6 +15,7 @@ const initialState: AuthState = {
   expiration: null,
   userid: null,
   username: null,
+  rememberMe: false,
 };
 
 const authSlice = createSlice({
@@ -27,20 +29,39 @@ const authSlice = createSlice({
         expiration: string;
         userid: string;
         username: string;
+        rememberMe?: boolean;
       }>,
     ) => {
+      // Si el estado es null (durante rehidratación), usar initialState
+      if (!state) {
+        return {
+          ...initialState,
+          token: action.payload.token,
+          expiration: action.payload.expiration,
+          userid: action.payload.userid,
+          username: action.payload.username,
+          rememberMe: action.payload.rememberMe ?? false,
+          isAuthenticated: true,
+        };
+      }
       state.token = action.payload.token;
       state.expiration = action.payload.expiration;
       state.userid = action.payload.userid;
       state.username = action.payload.username;
+      state.rememberMe = action.payload.rememberMe ?? false;
       state.isAuthenticated = true;
     },
     logout: state => {
+      // Si el estado es null (durante rehidratación), usar initialState
+      if (!state) {
+        return initialState;
+      }
       state.isAuthenticated = false;
       state.token = null;
       state.expiration = null;
       state.userid = null;
       state.username = null;
+      state.rememberMe = false;
     },
   },
 });
