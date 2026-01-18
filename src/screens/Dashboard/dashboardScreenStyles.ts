@@ -10,7 +10,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#F2F2F7',
     justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingTop: 20,
+    paddingTop: 30,
   },
   pressableCard: {
     width: '90%',
@@ -22,16 +22,22 @@ export const styles = StyleSheet.create({
     marginTop: 20,
     elevation: 2,
     backgroundColor: 'white',
-    minHeight: 80,
+    minHeight: 140,
+    paddingHorizontal: 20,
+    justifyContent: 'center',
   },
   cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     width: '100%',
+    flex: 1,
   },
   cardIcon: {
     margin: 0,
     marginRight: 16,
+    width: 80,
+    height: 80,
   },
   cardText: {
     flex: 1,

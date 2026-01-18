@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, TouchableOpacity, Text as RNText } from 'react-native';
-import { Surface, IconButton } from 'react-native-paper';
+import { View, TouchableOpacity, Text as RNText, Image } from 'react-native';
+import { Surface } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 import { AppBar } from '@/components/common';
@@ -31,10 +31,10 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
         >
           <Surface style={styles.card}>
             <View style={styles.cardContent}>
-              <IconButton
-                icon="book-outline"
-                size={40}
+              <Image
+                source={require('@/assets/images/icon_client.png')}
                 style={styles.cardIcon}
+                resizeMode="contain"
               />
               <View style={styles.cardText}>
                 <RNText style={styles.cardTitle}>Clientes</RNText>
