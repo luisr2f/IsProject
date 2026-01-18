@@ -1,12 +1,13 @@
-import React from 'react';
-import { View, FlatList, ActivityIndicator } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, FlatList } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Card, Avatar, Text, IconButton } from 'react-native-paper';
+import { Card, Text, IconButton, Searchbar, Chip } from 'react-native-paper';
 import type { RootStackParamList } from '@/navigation/types';
-import { AppBar, Button } from '@/components/common';
+import { AppBar, Button, PhotoImg } from '@/components/common';
 import { useGetClientsListQuery, ClientListItem } from '@/store/api/clientApi';
 import { useAppSelector } from '@/store/hooks';
 import { styles } from './clientListScreenStyles';
+import { Loading } from '@/components/common/loading';
 
 type ClientListScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -16,6 +17,9 @@ type ClientListScreenProps = NativeStackScreenProps<
 export const ClientListScreen: React.FC<ClientListScreenProps> = ({
   navigation,
 }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchType, setSearchType] = useState<'name' | 'identification'>('name');
+
   const userid = useAppSelector(state => state.auth.userid);
   const username = useAppSelector(state => state.auth.username);
   const {
@@ -39,11 +43,53 @@ export const ClientListScreen: React.FC<ClientListScreenProps> = ({
     navigation.navigate('ClientForm', { id: client.id });
   };
 
+  // Filtrar clientes según el tipo de búsqueda y el query
+  const filteredClients = useMemo(() => {
+    if (!clients) return [];
+
+    if (!searchQuery.trim()) {
+      return clients;
+    }
+
+    const query = searchQuery.trim().toLowerCase();
+
+    return clients.filter(client => {
+      if (searchType === 'name') {
+        const fullName = `${client.nombre} ${client.apellidos}`.trim().toLowerCase();
+        return fullName.includes(query);
+      } else {
+        // searchType === 'identification'
+        return client.identificacion.toLowerCase().includes(query);
+      }
+    });
+  }, [clients, searchQuery, searchType]);
+
+  const renderSearchTypeChip = (
+    type: 'name' | 'identification',
+    label: string,
+  ) => {
+    const isSelected = searchType === type;
+    return (
+      <Chip
+        selected={isSelected}
+        onPress={() => setSearchType(type)}
+        style={[
+          styles.searchTypeChip,
+          isSelected && styles.searchTypeChipSelected,
+        ]}
+        textStyle={[
+          styles.searchTypeChipText,
+          isSelected && styles.searchTypeChipTextSelected,
+        ]}
+        icon={isSelected ? 'check' : undefined}
+      >
+        {label}
+      </Chip>
+    );
+  };
+
   const renderClientItem = ({ item }: { item: ClientListItem }) => {
     const fullName = `${item.nombre} ${item.apellidos}`.trim();
-    const firstInitial = item.nombre?.[0]?.toUpperCase() || '';
-    const lastInitial = item.apellidos?.[0]?.toUpperCase() || '';
-    const initials = firstInitial + lastInitial || '?';
 
     return (
       <Card
@@ -52,7 +98,8 @@ export const ClientListScreen: React.FC<ClientListScreenProps> = ({
         elevation={0}
       >
         <Card.Content style={styles.clientCardContent}>
-          <Avatar.Text size={50} label={initials} style={styles.avatar} />
+          {/* Listado de momento no devuelve la imagen del cliente */}
+          <PhotoImg size={50} base64={''} />
           <View style={styles.clientInfo}>
             <Text variant="titleMedium" style={styles.clientName}>
               {fullName}
@@ -75,12 +122,7 @@ export const ClientListScreen: React.FC<ClientListScreenProps> = ({
   const renderEmptyState = () => {
     if (isLoading) {
       return (
-        <View style={styles.emptyContainer}>
-          <ActivityIndicator size="large" color="#007AFF" />
-          <Text variant="bodyLarge" style={styles.emptyText}>
-            Cargando clientes...
-          </Text>
-        </View>
+        <Loading />
       );
     }
 
@@ -104,6 +146,16 @@ export const ClientListScreen: React.FC<ClientListScreenProps> = ({
       );
     }
 
+    if (searchQuery.trim() && filteredClients.length === 0) {
+      return (
+        <View style={styles.emptyContainer}>
+          <Text variant="bodyLarge" style={styles.emptyText}>
+            No se encontraron clientes que coincidan con la búsqueda
+          </Text>
+        </View>
+      );
+    }
+
     return null;
   };
 
@@ -121,8 +173,21 @@ export const ClientListScreen: React.FC<ClientListScreenProps> = ({
             Nuevo cliente
           </Button>
         </View>
+        <View style={styles.searchContainer}>
+          <Searchbar
+            placeholder="Buscar..."
+            onChangeText={setSearchQuery}
+            value={searchQuery}
+            style={styles.searchbar}
+            inputStyle={styles.searchbarInput}
+          />
+          <View style={styles.searchTypeContainer}>
+            {renderSearchTypeChip('name', 'Nombre')}
+            {renderSearchTypeChip('identification', 'Identificación')}
+          </View>
+        </View>
         <FlatList
-          data={clients || []}
+          data={filteredClients}
           renderItem={renderClientItem}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
