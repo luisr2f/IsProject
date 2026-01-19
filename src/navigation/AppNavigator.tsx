@@ -12,7 +12,7 @@ import type { RootStackParamList } from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const AppNavigator: React.FC = () => {
-  const isAuthenticated = useAppSelector(state => state.auth.isAuthenticated);
+  const isAuthenticated = useAppSelector(state => state.auth?.isAuthenticated ?? false);
 
   return (
     <NavigationContainer
