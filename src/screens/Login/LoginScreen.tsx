@@ -113,7 +113,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       // Handle error and show snackbar
       let errorMessage = 'Error al iniciar sesión. Por favor, intente nuevamente.';
 
-      if (error?.data) {
+      // Verificar si es un error 401 (credenciales inválidas)
+      if (error?.status === 401) {
+        errorMessage = 'Error en el usuario o la contraseña';
+      } else if (error?.data) {
         // Si error.data es un string, usarlo directamente
         if (typeof error.data === 'string') {
           errorMessage = error.data;
