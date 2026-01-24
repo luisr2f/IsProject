@@ -179,7 +179,7 @@ export const ClientFormScreen: React.FC<ClientFormScreenProps> = ({
       fAfiliacion: '15.01.2026',
       sexo: 'M',
       resennaPersonal: 'Lorem ipsun',
-      imagen: 'string',
+      imagen: '',
       interesFK: '47c53f03-87fb-4bc4-8426-d17ef67445e0',
     }
     : {
