@@ -6,6 +6,7 @@
 
 import React, { useEffect } from 'react';
 import { StatusBar, useColorScheme, AppState } from 'react-native';
+import BootSplash from 'react-native-bootsplash';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider, Portal } from 'react-native-paper';
@@ -24,6 +25,11 @@ const AppContent: React.FC = () => {
   const isAuthenticated = authState?.isAuthenticated ?? false;
   const rememberMe = authState?.rememberMe ?? false;
   const [hasCheckedRehydration, setHasCheckedRehydration] = React.useState(false);
+
+  // Ocultar splash screen al montar el componente
+  useEffect(() => {
+    BootSplash.hide({ fade: true });
+  }, []);
 
   // Verificar una vez después de la rehidratación si hay sesión sin rememberMe
   // Esto limpia sesiones que quedaron del storage de una sesión anterior
