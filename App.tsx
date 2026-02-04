@@ -5,8 +5,7 @@
  */
 
 import React, { useEffect } from 'react';
-import { StatusBar, useColorScheme, AppState } from 'react-native';
-import BootSplash from 'react-native-bootsplash';
+import { StatusBar, AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider, Portal } from 'react-native-paper';
@@ -14,7 +13,7 @@ import { Provider, useSelector } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { store, persistor } from '@/store';
 import { AppNavigator } from '@/navigation';
-import { lightTheme, darkTheme } from '@/theme/paperTheme';
+import { lightTheme } from '@/theme/paperTheme';
 import { globalStyles } from '@/theme/globalStyles';
 import { GlobalSnackbar } from '@/components';
 import type { RootState } from '@/store/store';
@@ -25,11 +24,6 @@ const AppContent: React.FC = () => {
   const isAuthenticated = authState?.isAuthenticated ?? false;
   const rememberMe = authState?.rememberMe ?? false;
   const [hasCheckedRehydration, setHasCheckedRehydration] = React.useState(false);
-
-  // Ocultar splash screen al montar el componente
-  useEffect(() => {
-    BootSplash.hide({ fade: true });
-  }, []);
 
   // Verificar una vez después de la rehidratación si hay sesión sin rememberMe
   // Esto limpia sesiones que quedaron del storage de una sesión anterior
@@ -74,11 +68,11 @@ const AppContent: React.FC = () => {
 
   return (
     <GestureHandlerRootView style={globalStyles.container}>
-      <PaperProvider theme={useColorScheme() === 'dark' ? darkTheme : lightTheme}>
+      <PaperProvider theme={lightTheme}>
         <Portal.Host>
           <SafeAreaProvider>
             <StatusBar
-              barStyle={useColorScheme() === 'dark' ? 'light-content' : 'dark-content'}
+              barStyle="dark-content"
             />
             <AppNavigator />
             <GlobalSnackbar />
